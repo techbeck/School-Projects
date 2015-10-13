@@ -19,16 +19,16 @@ public class Assig2 {
 		File myFile = new File(firstName + ".txt");
 		if (!myFile.exists()) {
 			player.setFirstName(firstName);
-			System.out.print("Please enter your last name: ");
+			System.out.println("Please enter your information below:");
+			System.out.print("Last Name: ");
 			player.setLastName(keyboard.nextLine());
-			System.out.print("Please enter how much money you have: ");
+			System.out.print("Initial Money: ");
 			player.setMoney(keyboard.nextDouble());
-			System.out.print("Please enter how many rounds you've played: ");
-			player.setTotalRounds(keyboard.nextInt());
-			System.out.print("Please enter how many rounds you've won: ");
-			player.setTotalRoundsWon(keyboard.nextInt());
+			player.setTotalRounds(0);
+			player.setTotalRoundsWon(0);
 			keyboard.nextLine();
 		} else {
+			Scanner fileReader = new Scanner(myFile);
 			player.setLastName(fileReader.nextLine());
 			player.setFirstName(fileReader.nextLine());
 			player.setMoney(fileReader.nextDouble());
