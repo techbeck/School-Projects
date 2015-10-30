@@ -6,7 +6,6 @@ Lab Section 1080
 
 Program implements multiple-choice quiz.
 Keeps track of total number of tries, and correct answers.
-Keeps track of users independently of quizzes.
 */
 
 import java.util.*;
@@ -26,51 +25,6 @@ public class Assig3 {
 		}
 		Scanner quizReader = new Scanner(quizFile);
 		Scanner keyboard = new Scanner(System.in);
-
-		System.out.print("What's your username? ");
-		String name = keyboard.nextLine();
-		User person = null;
-		File userFile = new File("users.txt");
-		if (!userFile.exists()) {
-			System.out.println("User file does not exist");
-			System.exit(1);
-		}
-		Scanner userReader = new Scanner(userFile);
-		boolean userInFile = false;
-		int numUsers = userReader.nextInt();
-		int numQ = userReader.nextInt();
-		String[] quest = new String[numQ];
-		User[] users = new User[numUsers];
-		for (int i = 0; i < numUsers; i++) {
-			userReader.nextLine();
-			String fileUsername = userReader.nextLine();
-			users[i] = new User(fileUsername, numQ);
-			int numRight = userReader.nextInt();
-			int numWrong = userReader.nextInt();
-			for (int j = 0; j < numQ; j++) {
-				userReader.nextLine();
-				String question = userReader.nextLine();
-				quest[j] = question;
-				int totalTries = userReader.nextInt();
-				int correctTries = userReader.nextInt();
-				Question q = new Question(question);
-				users[i].addQuestion(q, j);
-			}
-			if (name.equals(fileUsername)) {
-				person = users[i];
-				userInFile = true;
-				break;
-			}
-		}
-		if (!userInFile) {
-			person = new User(name, numQ);
-			person.setNumQRight(0);
-			person.setNumQWrong(0);
-			for (int j = 0; j < numQ; j++) {
-				Question q = new Question(quest[j]);
-				person.addQuestion(q, j);
-			}
-		}
 
 		ArrayList<Question> questions = new ArrayList<Question>();
 		int numQuestions = 0;
@@ -103,10 +57,8 @@ public class Assig3 {
 			} while (answer > q.getNumAnswers());
 			if (answer == q.getCorrectAnswer()) {
 				q.answeredCorrectly(answer);
-				person.answeredRight(i);
 			} else {
 				q.answeredIncorrectly(answer);
-				person.answeredWrong(i);
 			}
 		}
 
@@ -135,10 +87,6 @@ public class Assig3 {
 		double percentCorrect = 100*(numCorrect/numTotal);
 		System.out.printf("Your score is: %.2f%%\n", percentCorrect);
 		
-		// Show cumulative user stats
-		System.out.printf("Over all attempts, your average score is: %.2f%%\n", person.getAvgScore());
-
-
 		// Shows cumulative stats
 		String easyQuestion = null;
 		double easyPercent = 0;
@@ -182,15 +130,5 @@ public class Assig3 {
 			quizWriter.println(q.getCorrectTries());
 		}
 		quizWriter.close();
-
-		PrintWriter userWriter = new PrintWriter(userFile);
-		userWriter.println(numUsers);
-		for (int i = 0; i < numUsers; i++) {
-			userWriter.println(users[i].toString());
-		}
-		if (!userInFile) {
-			userWriter.println(person.toString());
-		}
-		userWriter.close();
 	}
 }

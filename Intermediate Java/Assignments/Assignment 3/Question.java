@@ -7,19 +7,11 @@ public class Question {
 	private int numCorrectTries;
 	private String guess;
 	private boolean correct;
-	private int userTotal;
-	private int userCorrect
 
 	public Question(String q, int n) {
 		question = q;
 		numAnswers = n;
 		answers = new String[numAnswers];
-	}
-
-	public Question(String q, int t, int c) {
-		question = q;
-		userTotal = t;
-		userCorrect = c;
 	}
 
 	public String getQuestion() {
@@ -73,14 +65,12 @@ public class Question {
 	public void answeredCorrectly(int a) {
 		numTotalTries++;
 		numCorrectTries++;
-		userTotal++;
 		guess = answers[a];
 		correct = true;
 	}
 
 	public void answeredIncorrectly(int a) {
 		numTotalTries++;
-		userCorrect++;
 		guess = answers[a];
 		correct = false;
 	}
@@ -95,14 +85,6 @@ public class Question {
 
 	public double cumulativePercent() {
 		return 100*(numCorrectTries/(double) numTotalTries);
-	}
-
-	public int getUserTotal() {
-		return userTotal;
-	}
-
-	public int getUserCorrect() {
-		return userCorrect;
 	}
 
 	public String toString() {
