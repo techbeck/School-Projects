@@ -1,4 +1,4 @@
-public class Question {
+public class Question implements Comparable {
 	private String question;
 	private String[] answers;
 	private int numAnswers;
@@ -83,7 +83,7 @@ public class Question {
 	}
 
 	public double cumulativePercent() {
-		return numCorrectTries/(double) numTotalTries;
+		return 100*(numCorrectTries/(double) numTotalTries);
 	}
 
 	public String toString() {
@@ -94,4 +94,7 @@ public class Question {
 		return s.toString();
 	}
 
+	public int compareTo(Question q2) {
+		return (int)(this.cumulativePercent() - q2.cumulativePercent());
+	}
 }

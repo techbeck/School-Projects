@@ -120,6 +120,10 @@ public class Assig3 {
 		System.out.printf("Over all quizzes, your average score is: %.2f%%\n", person.getAvgScore());
 
 		// Shows cumulative stats
+		
+		TreeSet<Question> sortedSet = new TreeSet<Question>();
+		sortedSet.add(questions.get(0));
+		sortedSet.add(questions.get(1));
 		String easyQuestion = null;
 		double easyPercent = 0;
 		String hardQuestion = null;
@@ -131,7 +135,7 @@ public class Assig3 {
 			System.out.println("Number of times answered correctly: " + q.getCorrectTries());
 			int incorrectTries = q.getTotalTries() - q.getCorrectTries();
 			System.out.println("Number of times answered incorrectly: " + incorrectTries);
-			double cumulativePercentCorrect = 100*q.cumulativePercent();
+			double cumulativePercentCorrect = q.cumulativePercent();
 			System.out.printf("Percent correct answers: %.2f%%\n", cumulativePercentCorrect);
 			System.out.println();
 			if (cumulativePercentCorrect >= easyPercent) {
