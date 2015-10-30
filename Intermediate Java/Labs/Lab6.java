@@ -1,4 +1,4 @@
-import java.util.Scanner;
+import java.util.*;
 
 public class Lab6 {
 	public static void main(String[] args) {
@@ -11,7 +11,7 @@ public class Lab6 {
 			try {
 				numValues = keyboard.nextInt();
 				tryAgain = 0;
-			} catch (Exception ex) {
+			} catch (InputMismatchException ex) {
 				System.out.println("Invalid input. Try again.");
 				tryAgain = 1;
 			}
@@ -23,7 +23,7 @@ public class Lab6 {
 				try {
 					data[index] = keyboard.nextDouble();
 					tryAgain = 0;
-				} catch (Exception ex) {
+				} catch (InputMismatchException ex) {
 					System.out.println("Invalid input. Try again.");
 					tryAgain = 1;
 				}
