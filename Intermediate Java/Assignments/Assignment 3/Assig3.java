@@ -15,7 +15,7 @@ import java.io.*;
 public class Assig3 {
 	public static void main(String[] args) throws IOException {
 		if (args.length == 0) {
-			System.out.println("Enter file name when running program");
+			System.out.println("Enter quiz file name when running program");
 			System.exit(1);
 		}
 		String fileName = args[0];
@@ -27,32 +27,48 @@ public class Assig3 {
 		Scanner quizReader = new Scanner(quizFile);
 		Scanner keyboard = new Scanner(System.in);
 
-		System.out.print("What's your first name? ");
+		System.out.print("What's your username? ");
 		String name = keyboard.nextLine();
 		User person = null;
 		File userFile = new File("users.txt");
 		if (!userFile.exists()) {
-			person = new User(name, 0, 0);
+			System.out.println("User file does not exist");
+			System.exit(1);
 		}
 		Scanner userReader = new Scanner(userFile);
-		int numUsers;
 		boolean userInFile = false;
-		numUsers = userReader.nextInt();
+		int numUsers = userReader.nextInt();
+		int numQ = userReader.nextInt();
+		String[] quest = new String[numQ];
 		User[] users = new User[numUsers];
 		for (int i = 0; i < numUsers; i++) {
 			userReader.nextLine();
-			String userName = userReader.nextLine();
+			String fileUsername = userReader.nextLine();
+			users[i] = new User(fileUsername, numQ);
 			int numRight = userReader.nextInt();
 			int numWrong = userReader.nextInt();
-			users[i] = new User(userName, numRight, numWrong);
-			if (name.equals(userName)) {
+			for (int j = 0; j < numQ; j++) {
+				userReader.nextLine();
+				String question = userReader.nextLine();
+				quest[j] = question;
+				double percent = userReader.nextDouble();
+				Question q = new Question(question, percent);
+				users[i].addQuestion(q, j);
+			}
+			if (name.equals(fileUsername)) {
 				person = users[i];
 				userInFile = true;
 				break;
 			}
 		}
 		if (!userInFile) {
-			person = new User(name, 0, 0);
+			person = new User(name, numQ);
+			person.setNumQRight(0);
+			person.setNumQWrong(0);
+			for (int j = 0; j < numQ; j++) {
+				Question q = new Question(quest[j], 0.00);
+				person.addQuestion(q,j);
+			}
 		}
 
 		ArrayList<Question> questions = new ArrayList<Question>();
@@ -117,13 +133,12 @@ public class Assig3 {
 		}
 		double percentCorrect = 100*(numCorrect/numTotal);
 		System.out.printf("Your score is: %.2f%%\n", percentCorrect);
-		System.out.printf("Over all quizzes, your average score is: %.2f%%\n", person.getAvgScore());
+		
+		// Show cumulative user stats
+		System.out.printf("Over all attempts, your average score is: %.2f%%\n", person.getAvgScore());
+		
 
 		// Shows cumulative stats
-		
-		TreeSet<Question> sortedSet = new TreeSet<Question>();
-		sortedSet.add(questions.get(0));
-		sortedSet.add(questions.get(1));
 		String easyQuestion = null;
 		double easyPercent = 0;
 		String hardQuestion = null;

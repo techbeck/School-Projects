@@ -2,32 +2,59 @@ import java.io.*;
 import java.util.*;
 
 public class User {
-	private String firstName;
-	private int numRight;
-	private int numWrong;
+	private String username;
+	private int numQRight;
+	private int numQWrong;
+	private int numQuestions;
+	private Question[] questions;
 
-	public User(String n, int r, int w) {
-		firstName = n;
-		numRight = r;
-		numWrong = w;
+	public User(String name, int num) {
+		username = name;
+		numQuestions = num;
+		questions = new Question[numQuestions];
+	}
+
+	public void setNumQRight(int r) {
+		numQRight = r;
+	}
+
+	public void setNumQWrong(int w) {
+		numQWrong = w;
+	}
+
+	public void addQuestion(Question q, int j) {
+		questions[j] = q;
 	}
 
 	public void answeredWrong() {
-		numWrong++;
+		numQWrong++;
 	}
 
 	public void answeredRight() {
-		numRight++;
+		numQRight++;
 	}
 
 	public double getAvgScore() {
 		if (numWrong == 0) {
 			return 100.00;
 		}
-		return 100*(numRight/(double)(numRight+numWrong));
+		return 100*(numQRight/(double)(numQRight+numQWrong));
 	}
 
 	public String toString() {
-		return firstName + "\n" + numRight + "\n" + numWrong;
+		StringBuilder s = new StringBuilder(username);
+		s.append("\n");
+		s.append(numQRight);
+		s.append("\n");
+		s.append(numQWrong);
+		for (int i = 0; i < numQuestions; i++) {
+			s.append("\n");
+			s.append(questions[i].getQuestion());
+			s.append("\n");
+			s.append(questions[i].getUserNumRight());
+			s.append("\n");
+			s.append(questions[i].getUserNumWrong());
+		}
+		return s.toString();
 	}
 }

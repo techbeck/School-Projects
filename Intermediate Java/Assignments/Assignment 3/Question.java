@@ -1,4 +1,4 @@
-public class Question implements Comparable {
+public class Question {
 	private String question;
 	private String[] answers;
 	private int numAnswers;
@@ -7,11 +7,19 @@ public class Question implements Comparable {
 	private int numCorrectTries;
 	private String guess;
 	private boolean correct;
+	private int userNumRight;
+	private int userNumWrong;
 
 	public Question(String q, int n) {
 		question = q;
 		numAnswers = n;
 		answers = new String[numAnswers];
+	}
+
+	public Question(String q, int r, int w) {
+		question = q;
+		userNumRight = r;
+		userNumWrong = w;
 	}
 
 	public String getQuestion() {
@@ -20,6 +28,10 @@ public class Question implements Comparable {
 
 	public int getNumAnswers() {
 		return numAnswers;
+	}
+
+	public String[] getAnswersArray() {
+		return answers;
 	}
 
 	public void addAnswer(String a, int i) {
@@ -61,12 +73,14 @@ public class Question implements Comparable {
 	public void answeredCorrectly(int a) {
 		numTotalTries++;
 		numCorrectTries++;
+		userNumRight++;
 		guess = answers[a];
 		correct = true;
 	}
 
 	public void answeredIncorrectly(int a) {
 		numTotalTries++;
+		userNumWrong++;
 		guess = answers[a];
 		correct = false;
 	}
@@ -86,6 +100,18 @@ public class Question implements Comparable {
 		return 100*(numCorrectTries/(double) numTotalTries);
 	}
 
+	public double getUserPercent() {
+		return 100*(userNumRight/(double)(userNumRight+userNumWrong));
+	}
+
+	public int getUserNumRight() {
+		return userNumRight;
+	}
+
+	public int getUserNumWrong() {
+		return userNumWrong;
+	}
+
 	public String toString() {
 		StringBuilder s = new StringBuilder(question + "\n");
 		for (int i = 0; i < numAnswers; i++) {
@@ -95,6 +121,14 @@ public class Question implements Comparable {
 	}
 
 	public int compareTo(Question q2) {
-		return (int)(this.cumulativePercent() - q2.cumulativePercent());
+		double diff = (this.cumulativePercent() - q2.cumulativePercent());
+		if (Math.abs(diff) < 0.001) {
+			return 0;
+		}
+		if (this.cumulativePercent() < q2.cumulativePercent()) {
+			return -1;
+		} else {
+			return 1;
+		}
 	}
 }

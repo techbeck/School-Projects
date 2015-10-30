@@ -3,8 +3,8 @@ Is Princess Bride the best movie ever?
 yes
 no
 0
-15
-12
+2
+2
 What year was Pitt founded?
 4
 1805
@@ -12,16 +12,16 @@ What year was Pitt founded?
 1783
 1790
 1
-15
-13
+2
+2
 What is the chemical formula for table salt?
 3
 CaCl
 MgCl
 NaCl
 2
-15
-12
+2
+2
 Who was Henry VIII's second wife?
 6
 Catherine of Aragon
@@ -31,8 +31,8 @@ Anne Boleyn
 Catherine Parr
 Jane Seymour
 3
-15
-12
+2
+2
 Who was the 35th President of the USA?
 4
 Carter
@@ -40,5 +40,5 @@ Kennedy
 Roosevelt
 Eisenhower
 1
-15
-12
+2
+2
