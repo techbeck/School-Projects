@@ -51,8 +51,9 @@ public class Assig3 {
 				userReader.nextLine();
 				String question = userReader.nextLine();
 				quest[j] = question;
-				double percent = userReader.nextDouble();
-				Question q = new Question(question, percent);
+				int totalTries = userReader.nextInt();
+				int correctTries = userReader.nextInt();
+				Question q = new Question(question);
 				users[i].addQuestion(q, j);
 			}
 			if (name.equals(fileUsername)) {
@@ -66,8 +67,8 @@ public class Assig3 {
 			person.setNumQRight(0);
 			person.setNumQWrong(0);
 			for (int j = 0; j < numQ; j++) {
-				Question q = new Question(quest[j], 0.00);
-				person.addQuestion(q,j);
+				Question q = new Question(quest[j]);
+				person.addQuestion(q, j);
 			}
 		}
 
@@ -102,10 +103,10 @@ public class Assig3 {
 			} while (answer > q.getNumAnswers());
 			if (answer == q.getCorrectAnswer()) {
 				q.answeredCorrectly(answer);
-				person.answeredRight();
+				person.answeredRight(i);
 			} else {
 				q.answeredIncorrectly(answer);
-				person.answeredWrong();
+				person.answeredWrong(i);
 			}
 		}
 
@@ -136,7 +137,7 @@ public class Assig3 {
 		
 		// Show cumulative user stats
 		System.out.printf("Over all attempts, your average score is: %.2f%%\n", person.getAvgScore());
-		
+
 
 		// Shows cumulative stats
 		String easyQuestion = null;

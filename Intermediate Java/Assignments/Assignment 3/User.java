@@ -26,16 +26,18 @@ public class User {
 		questions[j] = q;
 	}
 
-	public void answeredWrong() {
-		numQWrong++;
+	public void answeredRight(int i) {
+		numQRight++;
+		questions[i].answeredCorrectly();
 	}
 
-	public void answeredRight() {
-		numQRight++;
+	public void answeredWrong(int i) {
+		numQWrong++;
+		questions[i].answeredIncorrectly();
 	}
 
 	public double getAvgScore() {
-		if (numWrong == 0) {
+		if (numQWrong == 0) {
 			return 100.00;
 		}
 		return 100*(numQRight/(double)(numQRight+numQWrong));
@@ -51,9 +53,9 @@ public class User {
 			s.append("\n");
 			s.append(questions[i].getQuestion());
 			s.append("\n");
-			s.append(questions[i].getUserNumRight());
+			s.append(questions[i].getUserTotal());
 			s.append("\n");
-			s.append(questions[i].getUserNumWrong());
+			s.append(questions[i].getUserCorrect());
 		}
 		return s.toString();
 	}
