@@ -1,4 +1,4 @@
-public class Question {
+public class Question implements Comparable<Question> {
 	private String question;
 	private String[] answers;
 	private int correctAnswer;
@@ -136,5 +136,16 @@ public class Question {
 			s.append(i + ": " + answers[i] + "\n");
 		}
 		return s.toString();
+	}
+
+	public int compareTo(Question q2) {
+		double diff = (this.getPercent1() - q2.getPercent1());
+		if (Math.abs(diff) < 0.001) {
+			diff = 0;
+		}
+		if (diff < 0) {
+			return -1;
+		}
+		return 1;
 	}
 }

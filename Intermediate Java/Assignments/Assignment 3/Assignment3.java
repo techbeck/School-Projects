@@ -152,14 +152,29 @@ public class Assignment3 {
 		System.out.printf("Your score is: %.2f%%\n", percentCorrect);
 		System.out.printf("Your average score is: %.2f%%\n", person.getPercentQRight());
 
+		ArrayList<Question> sortedList = new ArrayList<Question>();
+		sortedList.addAll(questions);
+		for (int start = 0; start < (sortedList.size() -1); start++) {
+			int maxIndex = start;
+			Question max = sortedList.get(start);
+			for(int index = start +1; index < sortedList.size(); index++) {
+				if (sortedList.get(index).compareTo(max) > 0) {
+					max = sortedList.get(index);
+					maxIndex = index;
+				}
+			}
+			sortedList.set(maxIndex, sortedList.get(start));
+			sortedList.set(start, max);
+		}
+
 		// Shows cumulative stats
 		String easyQuestion = null;
 		double easyPercent = 0;
 		String hardQuestion = null;
 		double hardPercent = 100;
 		System.out.println("\nCumulative stats:");
-		for (int i = 0; i < numQuestions; i++) {
-			Question q = questions.get(i);
+		for (int i = 0; i < sortedList.size(); i++) {
+			Question q = sortedList.get(i);
 			System.out.println("Question: " + q.getQuestion());
 			System.out.print("Number of times answered correctly on first try: "); 
 			System.out.println(q.getNumRight1());
@@ -195,7 +210,8 @@ public class Assignment3 {
 			for (int j = 0; j < answers.length; j++) {
 				quizWriter.println(answers[j]);
 			}
-			quizWriter.println(q.getCAnswerString());
+			quizWriter.println(q.getCAnswerNum());
+			quizWriter.println(q.getHint());
 			quizWriter.println(q.getNumRight1());
 			quizWriter.println(q.getNumWrong1());
 			quizWriter.println(q.getNumRight2());
