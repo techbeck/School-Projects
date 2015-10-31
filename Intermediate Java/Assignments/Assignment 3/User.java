@@ -1,62 +1,43 @@
-import java.io.*;
-import java.util.*;
-
 public class User {
-	private String username;
+	private String userName;
 	private int numQRight;
 	private int numQWrong;
-	private int numQuestions;
-	private Question[] questions;
+	private double percentQRight;
 
-	public User(String name, int num) {
-		username = name;
-		numQuestions = num;
-		questions = new Question[numQuestions];
+	public User(String n) {
+		userName = n;
+	}
+
+	public String getName() {
+		return userName;
 	}
 
 	public void setNumQRight(int r) {
 		numQRight = r;
 	}
 
+	public int getNumQRight() {
+		return numQRight;
+	}
+
 	public void setNumQWrong(int w) {
 		numQWrong = w;
 	}
 
-	public void addQuestion(Question q, int j) {
-		questions[j] = q;
+	public int getNumQWrong() {
+		return numQWrong;
 	}
 
-	public void answeredRight(int i) {
+	public void correctAnswer() {
 		numQRight++;
-		questions[i].answeredCorrectly();
 	}
 
-	public void answeredWrong(int i) {
+	public void incorrectAnswer() {
 		numQWrong++;
-		questions[i].answeredIncorrectly();
 	}
 
-	public double getAvgScore() {
-		if (numQWrong == 0) {
-			return 100.00;
-		}
-		return 100*(numQRight/(double)(numQRight+numQWrong));
-	}
-
-	public String toString() {
-		StringBuilder s = new StringBuilder(username);
-		s.append("\n");
-		s.append(numQRight);
-		s.append("\n");
-		s.append(numQWrong);
-		for (int i = 0; i < numQuestions; i++) {
-			s.append("\n");
-			s.append(questions[i].getQuestion());
-			s.append("\n");
-			s.append(questions[i].getUserTotal());
-			s.append("\n");
-			s.append(questions[i].getUserCorrect());
-		}
-		return s.toString();
+	public double getPercentQRight() {
+		percentQRight = 100*numQRight/(double)(numQRight+numQWrong);
+		return percentQRight;
 	}
 }

@@ -1,17 +1,78 @@
 public class Question {
 	private String question;
 	private String[] answers;
-	private int numAnswers;
 	private int correctAnswer;
-	private int numTotalTries;
-	private int numCorrectTries;
-	private String guess;
+	private String hint;
+	private int numRight1;
+	private int numWrong1;
+	private int numRight2;
+	private int numWrong2;
+	private double percentRight1;
+	private double percentRight2;
+	private String guess1;
+	private String guess2;
 	private boolean correct;
 
 	public Question(String q, int n) {
 		question = q;
-		numAnswers = n;
-		answers = new String[numAnswers];
+		answers = new String[n];
+	}
+
+	public void addAnswer(String g, int i) {
+		answers[i] = g;
+	}
+
+	public void setCorrectAnswer(int c) {
+		correctAnswer = c;
+	}
+
+	public void setHint(String h) {
+		hint = h;
+	}
+
+	public void setNumRight1(int r1) {
+		numRight1 = r1;
+	}
+
+	public void setNumWrong1(int w1) {
+		numWrong1 = w1;
+	}
+
+	public void setNumRight2(int r2) {
+		numRight2 = r2;
+	}
+
+	public void setNumWrong2(int w2) {
+		numWrong2 = w2;
+	}	
+
+	public int getNumRight1() {
+		return numRight1;
+	}
+
+	public int getNumRight2() {
+		return numRight2;
+	}
+
+	public int getNumWrong1() {
+		return numWrong1;
+	}
+
+	public int getNumWrong2() {
+		return numWrong2;
+	}
+
+	public double getPercent1() {
+		percentRight1 = 100*numRight1/(double)(numRight1+numWrong1);
+		return percentRight1;
+	}
+
+	public double getPercent2() {
+		if (numRight2+numWrong2 == 0) {
+			return 0;
+		}
+		percentRight2 = 100*numRight2/(double)(numRight2+numWrong2);
+		return percentRight2;
 	}
 
 	public String getQuestion() {
@@ -19,91 +80,61 @@ public class Question {
 	}
 
 	public int getNumAnswers() {
-		return numAnswers;
+		return answers.length;
+	}
+
+	public int getCAnswerNum() {
+		return correctAnswer;
+	}
+
+	public String getCAnswerString(){
+		return answers[correctAnswer];
 	}
 
 	public String[] getAnswersArray() {
 		return answers;
 	}
 
-	public void addAnswer(String a, int i) {
-		answers[i] = a;
+	public String getHint() {
+		return hint;
 	}
 
-	public String getAnswer(int i) {
-		return answers[i];
+	public String getGuess1() {
+		return guess1;
 	}
 
-	public void setCorrectAnswer(int a) {
-		correctAnswer = a;
+	public String getGuess2() {
+		return guess2;
 	}
 
-	public int getCorrectAnswer() {
-		return correctAnswer;
-	}
-
-	public String getCorrectAnswerString() {
-		return answers[correctAnswer];
-	}
-
-	public void setTotalTries(int t) {
-		numTotalTries = t;
-	}
-
-	public int getTotalTries() {
-		return numTotalTries;
-	}
-
-	public void setCorrectTries(int t) {
-		numCorrectTries = t;
-	}
-
-	public int getCorrectTries() {
-		return numCorrectTries;
-	}
-
-	public void answeredCorrectly(int a) {
-		numTotalTries++;
-		numCorrectTries++;
-		guess = answers[a];
+	public void answeredRight1(int g) {
+		numRight1++;
+		guess1 = answers[g];
 		correct = true;
 	}
 
-	public void answeredIncorrectly(int a) {
-		numTotalTries++;
-		guess = answers[a];
+	public void answeredWrong1(int g) {
+		numWrong1++;
+		guess1 = answers[g];
+	}
+
+	public void answeredRight2(int g) {
+		numRight2++;
+		guess2 = answers[g];
+		correct = true;
+	}
+
+	public void answeredWrong2(int g) {
+		numWrong2++;
+		guess2 = answers[g];
 		correct = false;
-	}
-
-	public String getGuess() {
-		return guess;
-	}
-
-	public boolean correct() {
-		return correct;
-	}
-
-	public double cumulativePercent() {
-		return 100*(numCorrectTries/(double) numTotalTries);
 	}
 
 	public String toString() {
 		StringBuilder s = new StringBuilder(question + "\n");
-		for (int i = 0; i < numAnswers; i++) {
+		for (int i = 0; i < answers.length; i++) {
 			s.append(i + ": " + answers[i] + "\n");
 		}
 		return s.toString();
-	}
-
-	public int compareTo(Question q2) {
-		double diff = (this.cumulativePercent() - q2.cumulativePercent());
-		if (Math.abs(diff) < 0.001) {
-			return 0;
-		}
-		if (this.cumulativePercent() < q2.cumulativePercent()) {
-			return -1;
-		} else {
-			return 1;
-		}
 	}
 }
