@@ -114,6 +114,7 @@ public class Assig4 {
 				}
 				voteButton.setEnabled(false);
 			}
+			voter.vote();
 		}
 	}
 

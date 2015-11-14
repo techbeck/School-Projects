@@ -1,11 +1,13 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.*;
 
 public class Ballot extends JPanel {
 	private int ballotNumber;
 	private String ballotName;
 	private JButton[] candidates;
+	private HashSet<JButton> clicked;
 
 	public Ballot(String num, String name, String[] options) {
 		ballotNumber = Integer.parseInt(num);
@@ -22,7 +24,7 @@ public class Ballot extends JPanel {
 			candidates[i].setEnabled(false);
 			add(candidates[i]);
 		}
-
+		clicked = new HashSet<JButton>();
 	}
 
 	public void enableBallot() {
@@ -41,18 +43,27 @@ public class Ballot extends JPanel {
 	}
 
 	class MyListener implements ActionListener {
-		private boolean clicked = false;
 		public void reset() {
-			clicked = false;
+			if (clicked.size() > 0) {
+				clicked.removeAll(clicked);
+			}
 		}
 		public void actionPerformed(ActionEvent e) {
 			JButton source = (JButton) e.getSource();
-			clicked = !clicked;
-			if (clicked) {
+			if (!clicked.contains(source)) {
 				source.setForeground(Color.RED);
-			}
-			if (!clicked) {
+				clicked.add(source);
+			} else if (clicked.contains(source)) {
 				source.setForeground(Color.BLACK);
+				clicked.remove(source);
+			}
+			if (clicked.size() > 1) {
+				Iterator iter = clicked.iterator();;
+				while (iter.hasNext()) {
+					JButton extra = (JButton) iter.next();
+					extra.setForeground(Color.BLACK);
+					iter.remove();
+				}
 			}
 		}
 	}
