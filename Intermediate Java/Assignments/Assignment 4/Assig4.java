@@ -7,11 +7,9 @@ Lab Section 1080
 
 /**
 Questions:
-- does Ballot need to be a separate file?
-	- if so, should Voter be in a separate file too?
-- for Boolean.parseBoolean(String s) assume nothing but true or false will be input?
-- wonky alignment
-- should I use Path stuff instead of File .renameTo()
+- button arrangement
+- how to get login to happen w/o having to input newly generated id from registering
+- should I use Path .move() instead of File .renameTo()
 */
 
 import java.util.*;
@@ -25,6 +23,7 @@ public class Assig4 {
 	private ArrayList<Ballot> ballots;
 	private ArrayList<Voter> voters;
 	private JButton loginButton;
+	private JButton registerButton;
 	private JButton voteButton;
 	private Voter voter;
 	private File votersFile;
@@ -49,10 +48,13 @@ public class Assig4 {
 			ballots.add(new Ballot(split1[0], split1[1], split2));
 		}
 		ballotsReader.close();
-		JPanel loginPanel = new JPanel();
+		JPanel loginPanel = new JPanel(new GridLayout(2,1));
 		loginButton = new JButton("Login to vote");
 		loginButton.addActionListener(new LoginListener());
 		loginPanel.add(loginButton);
+		registerButton = new JButton("Register to vote");
+		registerButton.addActionListener(new RegisterListener());
+		loginPanel.add(registerButton);
 
 		JPanel votePanel = new JPanel();
 		voteButton = new JButton("Cast your vote");
@@ -60,77 +62,16 @@ public class Assig4 {
 		voteButton.addActionListener(new VoteListener());
 		votePanel.add(voteButton);
 
-		window = new JFrame("Voting Program v1.1");
+		window = new JFrame("Voting Program v2.1");
 		window.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		for(int i = 0; i < numBallots; i++) {
 			window.add(ballots.get(i));
 		}
 		window.add(loginPanel);
 		window.add(votePanel);
-		window.setLayout(new GridLayout(1,numBallots +2));
+		window.setLayout(new FlowLayout());
 		window.setVisible(true);
 		window.pack();
-	}
-
-	class LoginListener implements ActionListener {
-		public void actionPerformed(ActionEvent e) {
-			boolean repeat = false;
-			do {
-				String voterID = JOptionPane.showInputDialog(null, "Please enter your voter ID");
-				if (voterID != null && voterID.length() != 0) {
-					int id = Integer.parseInt(voterID);
-					boolean valid = false;
-					boolean found = false;
-					for(int i = 0; i < voters.size(); i++) {
-						if (id == voters.get(i).getID()) {
-							found = true;
-							if (voters.get(i).hasVoted()) {
-								JOptionPane.showMessageDialog(null, voters.get(i).getName() + ", you have already voted!");
-								break;
-							} else {
-								valid = true;
-								voter = voters.get(i);
-								break;
-							}
-						}
-					}
-					if (!found) {
-						int response = JOptionPane.showConfirmDialog(null, id + " is not a valid id.\nWould you like to register?");
-						if (response == 0) {
-							registerNewVoter();
-							valid = true;
-						} else {
-							JOptionPane.showMessageDialog(null, "Without a valid voter ID, you can't vote.");
-						}
-					}
-					if (valid) {
-						JOptionPane.showMessageDialog(null, voter.getName() + ", please make your choices");
-						for (int i = 0; i < ballots.size(); i++) {
-							ballots.get(i).enableBallot();
-						}
-						voteButton.setEnabled(true);
-						loginButton.setEnabled(false);
-					}
-					repeat = false;
-				} else {
-					repeat = true;
-					JOptionPane.showMessageDialog(null, "That's not a valid input.");
-				}
-			} while (repeat);
-		}
-	}
-
-	class VoteListener implements ActionListener {
-		public void actionPerformed(ActionEvent e) {
-			int response = JOptionPane.showConfirmDialog(null, "Please confirm your vote");
-			if (response != 0) {
-				return;
-			}
-			recordBallots();
-			loginButton.setEnabled(true);
-			voteButton.setEnabled(false);
-			recordVoter();
-		}
 	}
 
 	class Voter {
@@ -160,19 +101,76 @@ public class Assig4 {
 		}
 	}
 
-	public void registerNewVoter() {
-		boolean repeat = false;
+	class LoginListener implements ActionListener {
+		public void actionPerformed(ActionEvent e) {
+			String voterID = JOptionPane.showInputDialog(null, "Please enter your voter ID");
+			if (voterID != null && voterID.length() != 0) {
+				int id = Integer.parseInt(voterID);
+				boolean valid = false;
+				boolean found = false;
+				for(int i = 0; i < voters.size(); i++) {
+					if (id == voters.get(i).getID()) {
+						found = true;
+						if (voters.get(i).hasVoted()) {
+							JOptionPane.showMessageDialog(null, voters.get(i).getName() + ", you have already voted!");
+							break;
+						} else {
+							valid = true;
+							voter = voters.get(i);
+							break;
+						}
+					}
+				}
+				if (!found) {
+					JOptionPane.showMessageDialog(null, id + " is not a valid id.\nPlease register to vote");
+				}
+				if (valid) {
+					JOptionPane.showMessageDialog(null, voter.getName() + ", please make your choices");
+					for (int i = 0; i < ballots.size(); i++) {
+						ballots.get(i).enableBallot();
+					}
+					voteButton.setEnabled(true);
+					loginButton.setEnabled(false);
+					registerButton.setEnabled(false);
+				}
+			} else {
+				JOptionPane.showMessageDialog(null, "That's not a valid input.");
+			}
+		}
+	}
+
+	class RegisterListener implements ActionListener {
+		public void actionPerformed(ActionEvent e) {
+			if (registeredNewVoter()) {
+				loginButton.doClick();
+				registerButton.setEnabled(false);
+			}
+		}
+	}
+
+	class VoteListener implements ActionListener {
+		public void actionPerformed(ActionEvent e) {
+			int response = JOptionPane.showConfirmDialog(null, "Please confirm your vote");
+			if (response != 0) {
+				return;
+			}
+			recordBallots();
+			loginButton.setEnabled(true);
+			registerButton.setEnabled(true);
+			voteButton.setEnabled(false);
+			recordVoter();
+		}
+	}
+
+	public boolean registeredNewVoter() {
 		String name = null;
 		int id = 0;
-		do {
-			name = JOptionPane.showInputDialog(null, "What's your name?");
-			if (name == null || name.length() == 0) {
-				repeat = true;
-				JOptionPane.showMessageDialog(null, "That's not a valid input.");
-			} else {
-				repeat = false;
-			}
-		} while (repeat);
+		name = JOptionPane.showInputDialog(null, "What's your name?");
+		if (name == null || name.length() == 0) {
+			JOptionPane.showMessageDialog(null, "That's not a valid input.");
+			return false;
+		}
+		boolean repeat = false;
 		do {
 			Random randomNum = new Random();
 			id = randomNum.nextInt(9000) + 1000;
@@ -184,10 +182,11 @@ public class Assig4 {
 				repeat = false;
 			}
 		} while (repeat);
-		JOptionPane.showMessageDialog(null, name + ", your id is " + id + ".\nPlease record it for future use.");
+		JOptionPane.showMessageDialog(null, name + ", your id is " + id + ".\nYou will need this to login.");
 		String voterInfo = id + ":" + name + ":" + "false";
 		voter = new Voter(voterInfo);
 		voters.add(voter);
+		return true;
 	}
 
 	public Scanner returnScanner(File fileName, String errorMessage) {
