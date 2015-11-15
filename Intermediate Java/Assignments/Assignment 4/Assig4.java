@@ -8,11 +8,10 @@ Lab Section 1080
 /**
 Questions:
 - does Ballot need to be a separate file?
+	- if so, should Voter be in a separate file too?
 - for Boolean.parseBoolean(String s) assume nothing but true or false will be input?
 - wonky alignment
-- handling invalid voter id (ignore/message/etc)
-- handling multiple selections (have to deselect in order to select new, or automatically(how?))?
-- for write-in candidates, how/when should they be added to the ballot?
+- should I use Path stuff instead of File .renameTo()
 */
 
 import java.util.*;
@@ -43,7 +42,7 @@ public class Assig4 {
 		votersReader.close();
 		File ballotsFile = new File(ballotsName);
 		if (!ballotsFile.exists()) {
-			JOptionPane.showMessageDialog(null, "Ballot file not found.");
+			JOptionPane.showMessageDialog(null, "Ballots file not found.");
 			System.exit(1);
 		}
 		Scanner ballotsReader = new Scanner(ballotsFile);
@@ -107,14 +106,49 @@ public class Assig4 {
 	class VoteListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			int response = JOptionPane.showConfirmDialog(null, "Please confirm your vote");
-			if (response == 0) {
-				loginButton.setEnabled(true);
-				for (int i = 0; i < ballots.size(); i++) {
-					ballots.get(i).disableBallot();
-				}
-				voteButton.setEnabled(false);
+			if (response != 0) {
+				return;
 			}
+			loginButton.setEnabled(true);
+			voteButton.setEnabled(false);
 			voter.vote();
+			for (int i = 0; i < ballots.size(); i++) {
+				String ballotNumber = ballots.get(i).getBallotNumber();
+				File ballotF = new File(ballotNumber + ".txt");
+				Scanner ballotR = null;
+				try {
+					ballotR = new Scanner(ballotF);
+				} catch (Exception ex) {
+					JOptionPane.showMessageDialog(null, "Ballot file not found.");
+					System.exit(1);
+				}
+				PrintWriter ballotW = null;
+				try {
+					ballotW = new PrintWriter("temp.txt");
+				} catch (Exception ex) {};
+				Ballot.Candidate[] candidates = ballots.get(i).accessCandidates();
+				Ballot.Candidate selected = ballots.get(i).getSelected();
+				for (int j = 0; j < candidates.length; j++) {
+					String candidate = ballotR.nextLine();
+					String[] split = candidate.split(":");
+					int numVotes = Integer.parseInt(split[1]);
+					candidates[j].initialVotes(numVotes);
+					String s =null;
+					System.out.println(s);
+					System.out.println(selected);
+					if (candidates[j].equals(selected)) {
+						candidates[j].addVote();
+					}
+					ballotW.println(candidates[j].getName() + ":" + candidates[j].getVotes());
+				}
+				ballotR.close();
+				ballotW.close();
+				File tempFile = new File("temp.txt");
+				tempFile.renameTo(ballotF);
+			}
+			for (int i = 0; i < ballots.size(); i++) {
+				ballots.get(i).disableBallot();
+			}
 		}
 	}
 

@@ -4,27 +4,72 @@ import java.awt.event.*;
 import java.util.*;
 
 public class Ballot extends JPanel {
-	private int ballotNumber;
+	private String ballotNumber;
 	private String ballotName;
-	private JButton[] candidates;
-	private HashSet<JButton> clicked;
+	private Candidate[] candidates;
+	private Candidate selected;
 
 	public Ballot(String num, String name, String[] options) {
-		ballotNumber = Integer.parseInt(num);
+		ballotNumber = num;
 		ballotName = name;
 		JLabel label = new JLabel(ballotName, SwingConstants.CENTER);
 		//setAlignmentX(Component.CENTER_ALIGNMENT);
 		add(label, BorderLayout.CENTER);
-		candidates = new JButton[options.length];
+		candidates = new Candidate[options.length];
 		setLayout(new GridLayout(candidates.length +1,1));
 		for (int i = 0; i < candidates.length; i++) {
-			candidates[i] = new JButton(options[i]);
-			candidates[i].setFont(new Font("Serif", Font.PLAIN, 15));
-			candidates[i].addActionListener(new MyListener());
-			candidates[i].setEnabled(false);
+			candidates[i] = new Candidate(options[i]);
 			add(candidates[i]);
 		}
-		clicked = new HashSet<JButton>();
+		selected = null;
+	}
+
+	class Candidate extends JButton {
+		private String candidateName;
+		private int numVotes;
+		public Candidate(String name) {
+			candidateName = name;
+			setText(candidateName);
+			setFont(new Font("Serif", Font.PLAIN, 15));
+			addActionListener(new MyListener());
+			setEnabled(false);
+		}
+		public void initialVotes(int initial) {
+			numVotes = initial;
+		}
+		public void addVote() {
+			numVotes++;
+			System.out.println("add:" + numVotes);
+		}
+		public String getName() {
+			return candidateName;
+		}
+		public int getVotes() {
+			System.out.println("get:" + numVotes);
+			return numVotes;
+		}
+	}
+
+	class MyListener implements ActionListener {
+		public void reset() {
+			selected = null;
+		}
+		public void actionPerformed(ActionEvent e) {
+			Candidate source = (Candidate) e.getSource();
+			if (selected == null) {
+				source.setForeground(Color.RED);
+				selected = source;
+				return;
+			}
+			if (selected == source) {
+				source.setForeground(Color.BLACK);
+				selected = null;
+				return;
+			}
+			selected.setForeground(Color.BLACK);
+			source.setForeground(Color.RED);
+			selected = source;
+		}
 	}
 
 	public void enableBallot() {
@@ -42,29 +87,16 @@ public class Ballot extends JPanel {
 		}
 	}
 
-	class MyListener implements ActionListener {
-		public void reset() {
-			if (clicked.size() > 0) {
-				clicked.removeAll(clicked);
-			}
-		}
-		public void actionPerformed(ActionEvent e) {
-			JButton source = (JButton) e.getSource();
-			if (!clicked.contains(source)) {
-				source.setForeground(Color.RED);
-				clicked.add(source);
-			} else if (clicked.contains(source)) {
-				source.setForeground(Color.BLACK);
-				clicked.remove(source);
-			}
-			if (clicked.size() > 1) {
-				Iterator iter = clicked.iterator();;
-				while (iter.hasNext()) {
-					JButton extra = (JButton) iter.next();
-					extra.setForeground(Color.BLACK);
-					iter.remove();
-				}
-			}
-		}
+	public String getBallotNumber() {
+		return ballotNumber;
+	}
+
+	public Candidate[] accessCandidates() {
+		return candidates;
+	}
+
+	public Candidate getSelected() {
+		System.out.println("ballot class:" + selected);
+		return selected;
 	}
 }
