@@ -27,9 +27,10 @@ public class Assig4 {
 	private JButton loginButton;
 	private JButton voteButton;
 	private Voter voter;
+	private File votersFile;
 
 	public Assig4(String ballotsName) throws IOException {
-		File votersFile = new File("voters.txt");
+		votersFile = new File("voters.txt");
 		if (!votersFile.exists()) {
 			JOptionPane.showMessageDialog(null, "Voter file not found.");
 			System.exit(1);
@@ -87,6 +88,10 @@ public class Assig4 {
 				boolean valid = false;
 				for(int i = 0; i < voters.size(); i++) {
 					if (id == voters.get(i).getID()) {
+						if (voters.get(i).hasVoted()) {
+							JOptionPane.showMessageDialog(null, voters.get(i).getName() + ", you have already voted!");
+							break;
+						}		
 						valid = true;
 						voter = voters.get(i);
 					}
@@ -109,9 +114,6 @@ public class Assig4 {
 			if (response != 0) {
 				return;
 			}
-			loginButton.setEnabled(true);
-			voteButton.setEnabled(false);
-			voter.vote();
 			for (int i = 0; i < ballots.size(); i++) {
 				String ballotNumber = ballots.get(i).getBallotNumber();
 				File ballotF = new File(ballotNumber + ".txt");
@@ -124,8 +126,11 @@ public class Assig4 {
 				}
 				PrintWriter ballotW = null;
 				try {
-					ballotW = new PrintWriter("temp.txt");
-				} catch (Exception ex) {};
+					ballotW = new PrintWriter("tempB.txt");
+				} catch (Exception ex) {
+					JOptionPane.showMessageDialog(null, "Something went wrong saving the ballot.");
+					System.exit(1);
+				}
 				Ballot.Candidate[] candidates = ballots.get(i).accessCandidates();
 				Ballot.Candidate selected = ballots.get(i).getSelected();
 				for (int j = 0; j < candidates.length; j++) {
@@ -133,9 +138,6 @@ public class Assig4 {
 					String[] split = candidate.split(":");
 					int numVotes = Integer.parseInt(split[1]);
 					candidates[j].initialVotes(numVotes);
-					String s =null;
-					System.out.println(s);
-					System.out.println(selected);
 					if (candidates[j].equals(selected)) {
 						candidates[j].addVote();
 					}
@@ -143,12 +145,29 @@ public class Assig4 {
 				}
 				ballotR.close();
 				ballotW.close();
-				File tempFile = new File("temp.txt");
-				tempFile.renameTo(ballotF);
+				File tempFileB = new File("tempB.txt");
+				tempFileB.renameTo(ballotF);
 			}
 			for (int i = 0; i < ballots.size(); i++) {
 				ballots.get(i).disableBallot();
 			}
+			loginButton.setEnabled(true);
+			voteButton.setEnabled(false);
+			voter.vote();
+			PrintWriter voterW = null;
+			try {
+				voterW = new PrintWriter("tempV.txt");
+			} catch (Exception ex) {
+				JOptionPane.showMessageDialog(null, "Something went wrong saving the voter info.");
+				System.exit(1);
+			}
+			for (Voter v: voters) {
+				voterW.println(v.getID() + ":" + v.getName() + ":" + v.hasVoted());
+			}
+			voterW.close();
+			File tempFileV = new File("tempV.txt");
+			tempFileV.renameTo(votersFile);
+
 		}
 	}
 

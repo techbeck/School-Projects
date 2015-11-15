@@ -31,7 +31,7 @@ public class Ballot extends JPanel {
 			candidateName = name;
 			setText(candidateName);
 			setFont(new Font("Serif", Font.PLAIN, 15));
-			addActionListener(new MyListener());
+			addActionListener(new CandidateListener());
 			setEnabled(false);
 		}
 		public void initialVotes(int initial) {
@@ -39,18 +39,16 @@ public class Ballot extends JPanel {
 		}
 		public void addVote() {
 			numVotes++;
-			System.out.println("add:" + numVotes);
 		}
 		public String getName() {
 			return candidateName;
 		}
 		public int getVotes() {
-			System.out.println("get:" + numVotes);
 			return numVotes;
 		}
 	}
 
-	class MyListener implements ActionListener {
+	class CandidateListener implements ActionListener {
 		public void reset() {
 			selected = null;
 		}
@@ -81,7 +79,7 @@ public class Ballot extends JPanel {
 	public void disableBallot() {
 		for(int i = 0; i < candidates.length; i++) {
 			candidates[i].setEnabled(false);
-			MyListener listener = (MyListener) candidates[i].getActionListeners()[0];
+			CandidateListener listener = (CandidateListener) candidates[i].getActionListeners()[0];
 			listener.reset();
 			candidates[i].setForeground(Color.BLACK);
 		}
@@ -96,7 +94,6 @@ public class Ballot extends JPanel {
 	}
 
 	public Candidate getSelected() {
-		System.out.println("ballot class:" + selected);
 		return selected;
 	}
 }

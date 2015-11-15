@@ -1,4 +1,5 @@
-3
-12345:Best Romance:The Fault in Our Stars,Princess Bride,The Notebook,Pride & Prejudice
-54321:Best Action Movie:The Avengers,The Dark Knight,Terminator
-67890:Best Sci-Fi:Star Wars,Star Trek,The Martian,Back to the Future
+4
+12345:Best Romance:The Fault in Our Stars,The Notebook,Pride & Prejudice
+54321:Best Action/Adventure:The Avengers,The Princess Bride,The Dark Knight,Terminator
+67890:Best Sci-Fi:Star Wars,Star Trek,The Martian,Back to the Future,Avatar
+11111:Best Fantasy:Lord of the Rings,Harry Potter,Spirited Away,Labyrinth
