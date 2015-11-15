@@ -1,6 +1,2 @@
-1234:Becca Addison:true
-4321:John Doe:false
-5678:Jane Doe:false
-8765:Tony Stark:false
-6666:Skip Addison:true
-1286:Katie Addison:false
+1234:Becca Addison:false
+

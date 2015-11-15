@@ -1,4 +1,4 @@
-Lord of the Rings:0
-Harry Potter:7
-Spirited Away:0
-Labyrinth:0
+Lord of the Rings:1
+Harry Potter:18
+Spirited Away:1
+Labyrinth:2
