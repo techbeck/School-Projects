@@ -55,7 +55,7 @@ public class Ballot extends JPanel {
 		public void actionPerformed(ActionEvent e) {
 			Candidate source = (Candidate) e.getSource();
 			if (selected == null) {
-				source.setForeground(Color.RED);
+				source.setForeground(Color.MAGENTA);
 				selected = source;
 				return;
 			}
@@ -65,7 +65,7 @@ public class Ballot extends JPanel {
 				return;
 			}
 			selected.setForeground(Color.BLACK);
-			source.setForeground(Color.RED);
+			source.setForeground(Color.MAGENTA);
 			selected = source;
 		}
 	}

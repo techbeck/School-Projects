@@ -5,13 +5,6 @@ Lecture Section 1060
 Lab Section 1080
 */
 
-/**
-Questions:
-- button arrangement
-- how to get login to happen w/o having to input newly generated id from registering
-- should I use Path .move() instead of File .renameTo()
-*/
-
 import java.util.*;
 import java.io.*;
 import javax.swing.*;
@@ -62,7 +55,7 @@ public class Assig4 {
 		voteButton.addActionListener(new VoteListener());
 		votePanel.add(voteButton);
 
-		window = new JFrame("Voting Program v2.1");
+		window = new JFrame("Voting Program v2.2");
 		window.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		for(int i = 0; i < numBallots; i++) {
 			window.add(ballots.get(i));
@@ -106,33 +99,7 @@ public class Assig4 {
 			String voterID = JOptionPane.showInputDialog(null, "Please enter your voter ID");
 			if (voterID != null && voterID.length() != 0) {
 				int id = Integer.parseInt(voterID);
-				boolean valid = false;
-				boolean found = false;
-				for(int i = 0; i < voters.size(); i++) {
-					if (id == voters.get(i).getID()) {
-						found = true;
-						if (voters.get(i).hasVoted()) {
-							JOptionPane.showMessageDialog(null, voters.get(i).getName() + ", you have already voted!");
-							break;
-						} else {
-							valid = true;
-							voter = voters.get(i);
-							break;
-						}
-					}
-				}
-				if (!found) {
-					JOptionPane.showMessageDialog(null, id + " is not a valid id.\nPlease register to vote");
-				}
-				if (valid) {
-					JOptionPane.showMessageDialog(null, voter.getName() + ", please make your choices");
-					for (int i = 0; i < ballots.size(); i++) {
-						ballots.get(i).enableBallot();
-					}
-					voteButton.setEnabled(true);
-					loginButton.setEnabled(false);
-					registerButton.setEnabled(false);
-				}
+				login(id);
 			} else {
 				JOptionPane.showMessageDialog(null, "That's not a valid input.");
 			}
@@ -142,7 +109,6 @@ public class Assig4 {
 	class RegisterListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			if (registeredNewVoter()) {
-				loginButton.doClick();
 				registerButton.setEnabled(false);
 			}
 		}
@@ -159,6 +125,36 @@ public class Assig4 {
 			registerButton.setEnabled(true);
 			voteButton.setEnabled(false);
 			recordVoter();
+		}
+	}
+
+	public void login(int id) {
+		boolean valid = false;
+		boolean found = false;
+		for(int i = 0; i < voters.size(); i++) {
+			if (id == voters.get(i).getID()) {
+				found = true;
+				if (voters.get(i).hasVoted()) {
+					JOptionPane.showMessageDialog(null, voters.get(i).getName() + ", you have already voted!");
+					break;
+				} else {
+					valid = true;
+					voter = voters.get(i);
+					break;
+				}
+			}
+		}
+		if (!found) {
+			JOptionPane.showMessageDialog(null, id + " is not a valid id.\nPlease register to vote");
+		}
+		if (valid) {
+			JOptionPane.showMessageDialog(null, voter.getName() + ", please make your choices");
+			for (int i = 0; i < ballots.size(); i++) {
+				ballots.get(i).enableBallot();
+			}
+			voteButton.setEnabled(true);
+			loginButton.setEnabled(false);
+			registerButton.setEnabled(false);
 		}
 	}
 
@@ -182,10 +178,11 @@ public class Assig4 {
 				repeat = false;
 			}
 		} while (repeat);
-		JOptionPane.showMessageDialog(null, name + ", your id is " + id + ".\nYou will need this to login.");
+		JOptionPane.showMessageDialog(null, name + ", your id is " + id + ".\nPlease record this for future use.");
 		String voterInfo = id + ":" + name + ":" + "false";
 		voter = new Voter(voterInfo);
 		voters.add(voter);
+		login(id);
 		return true;
 	}
 
