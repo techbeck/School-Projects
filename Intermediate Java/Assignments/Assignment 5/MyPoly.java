@@ -127,6 +127,20 @@ public class MyPoly extends Polygon
 		// points (i.e. the last point has been removed) then this method should return
 		// null.  If (x,y) is not within any point circles in the MyPoly then the
 		// original, unchanged MyPoly should be returned.
+		boolean found = false;
+		for (int i = 0; i < thePoints.size(); i++)
+		{
+			if (thePoints[i].contains(x,y))
+			{
+				found = true;
+				break;
+			}
+		}
+		if (!found)
+		{
+			return this;
+		}
+		
 	}
 
 	public boolean contains(int x, int y)
