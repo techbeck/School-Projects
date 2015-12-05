@@ -93,8 +93,9 @@ public class MyPoly extends Polygon
 		// getClosest().
 		int[] tempX = new int[npoints+1];
 		int[] tempY = new int[npoints+1];
-		int from = 0, to, index = getClosest(x,y);
-		for (to = 0; to < npoints + 1; to++)
+		int index = getClosest(x,y);
+		int from = 0;
+		for (int to = 0; to < npoints + 1; to++)
 		{
 			if (to == index + 1)
 			{
@@ -175,15 +176,17 @@ public class MyPoly extends Polygon
 		}
 		int[] tempX = new int[npoints-1];
 		int[] tempY = new int[npoints-1];
-		int from = 0, to;
-		for (to = 0; to < npoints; from++)
+		int to = 0;
+		for (int from = 0; from < npoints; from++)
 		{
 			if (to == index + 1)
 			{
+				System.out.println("1: index = " + index + ", to = " + to + ", from = " + from);
 				from++;
 			} 
 			else
 			{
+				System.out.println("2: index = " + index + ", to = " + to + ", from = " + from);
 				tempX[to] = xpoints[from];
 				tempY[to] = ypoints[from];
 				to++;
