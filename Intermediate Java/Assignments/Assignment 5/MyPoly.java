@@ -54,16 +54,16 @@ public class MyPoly extends Polygon
 		temp.setFrameFromCenter(x, y, x+4, y+4);
 		thePoints.add(temp);
 	}
-     
+    
+	// Must override this method to translate point circles along with Polygon
 	public void translate(int deltaX, int deltaY)
 	{
-		// You must override this method
 		// translate the superclass polygon vertices
 		super.translate(deltaX,deltaY);
 		for (int i = 0; i < thePoints.size(); i++)
 		{
-			// get the x coordinate and match it to the correct 
-			thePoints[i].setFrame(thePoints[i].getX() + deltaX, thePoints[i].getY() + deltaY);
+			// add deltaX to the correct x coordinate for each point circle
+			thePoints[i].setFrame(thePoints[i].getX() + deltaX, thePoints[i].getY() + deltaY, thePoints[i].getWidth(), thePoints[i].getHeight());
 		}
 	}
     
@@ -72,13 +72,12 @@ public class MyPoly extends Polygon
 	{
 		highlighted = b;	
 	}
-     
+    
+    // Must override this method to add a new point circle along with new point on Polygon
 	public void addPoint(int x, int y)
 	{
-		// You must override this method to add a new point to the end of the
-		// MyPoly.  The Polygon version works fine for the "regular" part of the
-		// MyPoly but you must add the functionality to add the circle for the
-		// point.
+		super.addPoint(x,y);
+		addCircle(x,y);
 	}
      
 	public MyPoly insertPoint(int x, int y)
