@@ -63,7 +63,7 @@ public class MyPoly extends Polygon
 		for (Ellipse2D.Double e : thePoints)
 		{
 			// add deltaX to the correct x coordinate for each point circle
-			e.setFrame(thePoints.get(i).getX() + deltaX, e.getY() + deltaY, e.getWidth(), e.getHeight());
+			e.setFrame(e.getX() + deltaX, e.getY() + deltaY, e.getWidth(), e.getHeight());
 		}
 	}
     
@@ -80,11 +80,35 @@ public class MyPoly extends Polygon
 		addCircle(x,y);
 	}
      
+    // Return a new MyPoly containing new point (x,y) inserted between the two points
+	// in the MyPoly that it is "closest" to.
 	public MyPoly insertPoint(int x, int y)
 	{
-		// Implement this method to return a new MyPoly containing new point (x,y)
-		// inserted between the two points in the MyPoly that it is "closest" to.  See
-		// the getClosest() method below for help with this.
+		// IMPLEMENT: insertPoint()
+		// Note that this method is not a mutator, but rather returns
+		// a NEW MyPoly object.  The new MyPoly will contain all of the 
+		// points in the selected MyPoly, but with (x1, y1) inserted 
+		// between the points closest to point (x1, y1).  For help with
+		// this see MyPoly.java and in particular the method
+		// getClosest().
+		int[] tempX = new int[npoints+1];
+		int[] tempY = new int[npoints+1];
+		int from = 0, to, index = getClosest(x,y);
+		for (to = 0; to < npoints + 1; to++)
+		{
+			if (to == index + 1)
+			{
+				tempX[to] = x;
+				tempY[to] = y;
+			} 
+			else
+			{
+				tempX[to] = xpoints[from];
+				tempY[to] = ypoints[from];
+				from++;
+			}
+		}
+		return new MyPoly(tempX, tempY, npoints + 1, myColor);
 	}
 	
 	// This method will return the index of the first point of the line segment that is
@@ -117,9 +141,19 @@ public class MyPoly extends Polygon
 	}
 
 	// Return a new MyPoly without the selected point. If selected point is not within
-	// a point circle, original MyPoly will be returned.
+	// a point circle, original MyPoly will be returned. If selected point is last point,
+	// null object will be returned.
 	public MyPoly removePoint(int x, int y)
 	{
+		// IMPLEMENT: removePoint()
+		// Note that this method is not a mutator, but rather returns
+		// a NEW MyPoly object.  If point (x1, y1) falls within one of
+		// the "point" circles of the MyPoly then the new MyPoly will not
+		// contain that point.  If (x1, y1) does not fall within any point
+		// circle then the original MyPoly will be returned. If, after the 
+		// removal of the point, no points are remaining in the MyPoly
+		// the removePoint() method will return null.  See more details in 
+		// MyPoly.java
 		boolean found = false;
 		int index = 0;
 		for (int i = 0; i < thePoints.size(); i++)
@@ -139,25 +173,54 @@ public class MyPoly extends Polygon
 		{
 			return this;
 		}
-		ArrayList<Integer> tempX = new ArrayList<Integer>;
-		ArrayList<Integer> tempY = new ArrayList<Integer;
-		for (int i = 0; i < xpoints.length; i++)
+		int[] tempX = new int[npoints-1];
+		int[] tempY = new int[npoints-1];
+		int from = 0, to;
+		for (to = 0; to < npoints; from++)
 		{
-			if (i != index)
+			if (to == index + 1)
 			{
-				tempX.add(xpoints[i]);
-				tempY.add(ypoints[i]);
+				from++;
+			} 
+			else
+			{
+				tempX[to] = xpoints[from];
+				tempY[to] = ypoints[from];
+				to++;
 			}
 		}
-		return new MyPoly(tempX.toArray(), tempY.toArray(), npoints - 1, myColor); 
+		return new MyPoly(tempX, tempY, npoints - 1, myColor); 
 	}
 
+	// If 3 or more points, super method works. If only 1 point, must be within point
+	// circle. If 2 points, must be within threshold distance of the line.
 	public boolean contains(int x, int y)
 	{
-		// Override this method. The Polygon contains() method works fine as long as
-		// the Polygon has 3 or more points.  You will override the method so that if
-		// a MyPoly has only 2 points or 1 point it will still work.  Think about how
-		// you can do this.
+		if (npoints >=3)
+		{
+			return super.contains(x,y);
+		}
+		if (npoints == 2)
+		{
+			Line2D tempSeg = new Line2D.Double(xpoints[0],ypoints[0],xpoints[1],ypoints[1]);
+			// Threshold chosen to be 4.0 because it is radius of point circles.
+			double threshold = 4.0;
+			if (tempSeg.ptSegDist(x,y) < threshold)
+			{
+				return true;
+			}
+		}
+		if (npoints == 1)
+		{
+			for (Ellipse2D.Double e : thePoints)
+			{
+				if (e.contains(x,y))
+				{
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	public void draw(Graphics2D g)
@@ -168,6 +231,7 @@ public class MyPoly extends Polygon
 		// special cases of 1 point (draw only the point circle), 2 points (drow the
 		// line) and the case where the MyPoly is selected.  You must also use the
 		// color of the MyPoly in this method.
+		g.draw(this);
 	}
 	  
 	public String fileData()
@@ -179,6 +243,7 @@ public class MyPoly extends Polygon
 		// Where the points and the r,g,b values are separated by a vertical bar.
 		// For two examples, see A5snap.htm and A5Bsnap.htm.
 		// Look at the Color class to see how to get the r,g,b values.
+		return null;
 	}
 
 	// These methods are also so simple that I have implemented them.
