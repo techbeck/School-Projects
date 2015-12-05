@@ -179,10 +179,10 @@ public class MyPoly extends Polygon
 		int to = 0;
 		for (int from = 0; from < npoints; from++)
 		{
-			if (to == index + 1)
+			if (to == index)
 			{
 				System.out.println("1: index = " + index + ", to = " + to + ", from = " + from);
-				from++;
+				
 			} 
 			else
 			{
