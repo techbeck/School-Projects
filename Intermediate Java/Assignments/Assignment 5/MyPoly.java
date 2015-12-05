@@ -157,7 +157,7 @@ public class MyPoly extends Polygon
 		// MyPoly.java
 		boolean contained = false;
 		int index = 0;
-		for (int i = 0; i < thePoints.size(); i++)
+		for (int i = 0; i < npoints; i++)
 		{
 			if (thePoints.get(i).contains(x,y))
 			{
@@ -225,6 +225,8 @@ public class MyPoly extends Polygon
 		return false;
 	}
 	
+	// Draw the MyPoly onto the Graphics2D argument g. When selected, the point circles
+	// will be drawn.
 	public void draw(Graphics2D g)
 	{
 		// IMPLEMENT: draw().  This method will utilize
@@ -236,14 +238,25 @@ public class MyPoly extends Polygon
 		// and the color).  Also special cases for MyPoly objects with only
 		// 1 or 2 points must be handled as well. For some help with this see
 		// handout MyRectangle2D
-		
+
 		// Implement this method to draw the MyPoly onto the Graphics2D argument g.
 		// See MyRectangle2D.java for a simple example of doing this.  In the case of
 		// this MyPoly class the method is more complex, since you must handle the
 		// special cases of 1 point (draw only the point circle), 2 points (drow the
 		// line) and the case where the MyPoly is selected.  You must also use the
 		// color of the MyPoly in this method.
-		g.fill(this);
+		g.setColor(myColor);
+		if (highlighted)
+		{
+			for (Ellipse2D.Double e : thePoints)
+			{
+				g.draw(e);
+			}
+		}
+		else
+		{
+			g.fill(this);
+		}
 		g.draw(this);
 	}
 	  
@@ -256,7 +269,18 @@ public class MyPoly extends Polygon
 		// Where the points and the r,g,b values are separated by a vertical bar.
 		// For two examples, see A5snap.htm and A5Bsnap.htm.
 		// Look at the Color class to see how to get the r,g,b values.
-		return null;
+		StringBuilder data = new StringBuilder();
+		for (int i = 0; i < npoints - 1; i++)
+		{
+			data.append(xpoints[i] + ",");
+			data.append(ypoints[i] + ":");
+		}
+		data.append(xpoints[npoints - 1] + ",");
+		data.append(ypoints[npoints - 1] + "|");
+		data.append(myColor.getRed() + ",");
+		data.append(myColor.getGreen() + ",");
+		data.append(myColor.getBlue());
+		return data.toString();
 	}
 
 	// These methods are also so simple that I have implemented them.
