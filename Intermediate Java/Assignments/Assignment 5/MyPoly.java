@@ -155,7 +155,7 @@ public class MyPoly extends Polygon
 		// removal of the point, no points are remaining in the MyPoly
 		// the removePoint() method will return null.  See more details in 
 		// MyPoly.java
-		boolean found = false;
+		boolean contained = false;
 		int index = 0;
 		for (int i = 0; i < thePoints.size(); i++)
 		{
@@ -165,28 +165,27 @@ public class MyPoly extends Polygon
 				{
 					return null;
 				}
-				found = true;
+				contained = true;
 				index = i;
 				break;
 			}
 		}
-		if (!found)
+		if (!contained)
 		{
 			return this;
 		}
 		int[] tempX = new int[npoints-1];
 		int[] tempY = new int[npoints-1];
 		int to = 0;
+		boolean found = false;
 		for (int from = 0; from < npoints; from++)
 		{
-			if (to == index)
+			if (to == index && !found)
 			{
-				System.out.println("1: index = " + index + ", to = " + to + ", from = " + from);
-				
+				found = true;
 			} 
 			else
 			{
-				System.out.println("2: index = " + index + ", to = " + to + ", from = " + from);
 				tempX[to] = xpoints[from];
 				tempY[to] = ypoints[from];
 				to++;
@@ -228,12 +227,23 @@ public class MyPoly extends Polygon
 	
 	public void draw(Graphics2D g)
 	{
+		// IMPLEMENT: draw().  This method will utilize
+		// the predefined Graphics2D methods draw() (for the outline only,
+		// when the object is first being drawn or it is selected by the user) 
+		// and fill() (for the filled in shape) for the "basic" Polygon
+		// but will require additional code to draw the enhancements added
+		// in MyPoly (ex: the circles indicating the points in the polygon
+		// and the color).  Also special cases for MyPoly objects with only
+		// 1 or 2 points must be handled as well. For some help with this see
+		// handout MyRectangle2D
+		
 		// Implement this method to draw the MyPoly onto the Graphics2D argument g.
 		// See MyRectangle2D.java for a simple example of doing this.  In the case of
 		// this MyPoly class the method is more complex, since you must handle the
 		// special cases of 1 point (draw only the point circle), 2 points (drow the
 		// line) and the case where the MyPoly is selected.  You must also use the
 		// color of the MyPoly in this method.
+		g.fill(this);
 		g.draw(this);
 	}
 	  
