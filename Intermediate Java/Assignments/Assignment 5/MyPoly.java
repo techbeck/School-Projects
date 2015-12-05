@@ -60,10 +60,10 @@ public class MyPoly extends Polygon
 	{
 		// translate the superclass polygon vertices
 		super.translate(deltaX,deltaY);
-		for (int i = 0; i < thePoints.size(); i++)
+		for (Ellipse2D.Double e : thePoints)
 		{
 			// add deltaX to the correct x coordinate for each point circle
-			thePoints[i].setFrame(thePoints[i].getX() + deltaX, thePoints[i].getY() + deltaY, thePoints[i].getWidth(), thePoints[i].getHeight());
+			e.setFrame(thePoints.get(i).getX() + deltaX, e.getY() + deltaY, e.getWidth(), e.getHeight());
 		}
 	}
     
@@ -116,23 +116,22 @@ public class MyPoly extends Polygon
 		}
 	}
 
+	// Return a new MyPoly without the selected point. If selected point is not within
+	// a point circle, original MyPoly will be returned.
 	public MyPoly removePoint(int x, int y)
 	{
-		// Implement this method to return a new MyPoly that is the same as the
-		// original but without the "point" containing (x, y).  Note that in this
-		// case (x, y) is not an actual point in the MyPoly but rather a location
-		// on the screen that was clicked on my the user.  If this point falls within
-		// any of the point circles in the MyPoly then the point in the MyPoly that
-		// the circle represents should be removed.  If the resulting MyPoly has no
-		// points (i.e. the last point has been removed) then this method should return
-		// null.  If (x,y) is not within any point circles in the MyPoly then the
-		// original, unchanged MyPoly should be returned.
 		boolean found = false;
+		int index = 0;
 		for (int i = 0; i < thePoints.size(); i++)
 		{
-			if (thePoints[i].contains(x,y))
+			if (thePoints.get(i).contains(x,y))
 			{
+				if (npoints == 1)
+				{
+					return null;
+				}
 				found = true;
+				index = i;
 				break;
 			}
 		}
@@ -140,7 +139,17 @@ public class MyPoly extends Polygon
 		{
 			return this;
 		}
-		
+		ArrayList<Integer> tempX = new ArrayList<Integer>;
+		ArrayList<Integer> tempY = new ArrayList<Integer;
+		for (int i = 0; i < xpoints.length; i++)
+		{
+			if (i != index)
+			{
+				tempX.add(xpoints[i]);
+				tempY.add(ypoints[i]);
+			}
+		}
+		return new MyPoly(tempX.toArray(), tempY.toArray(), npoints - 1, myColor); 
 	}
 
 	public boolean contains(int x, int y)
