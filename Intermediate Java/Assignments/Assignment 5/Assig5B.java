@@ -15,7 +15,7 @@ import java.io.*;
 public class Assig5B
 {
     private final int NONE = 0, DRAW = 1, MODIFY = 2;  // State variables for the
-    					// drawPanel.  See more details below in class ShapePanel
+    					// drawPanel modes.  See more details below in class ShapePanel
     private ShapePanel drawPanel;
     private JPanel buttonPanel;
     private JButton drawPoly, modifyPoints;  // Buttons to show in JFrame
@@ -26,8 +26,10 @@ public class Assig5B
 
 	private JMenuBar theBar;	// for menu options
 	private JMenu fileMenu, editMenu;	// two menus will be used
-	private JMenuItem endProgram, saveScene;  		// 4 menu items will be used in this
-	private JMenuItem delItem, setColor, pushBack;	// program
+	private JMenuItem endProgram, saveScene;  	// 9 menu items will be used in this program
+	private JMenuItem newCanvas, open, saveAs, saveAsJPG;
+	private JMenuItem delItem, setColor;
+	private JMenuItem pushBack;	
 	private int selindex, startInd;		// selindex is index of current selected MyPoly
 										// startInd is index where search within list of
 										// shapes will start
@@ -70,11 +72,23 @@ public class Assig5B
 		theFrame.setJMenuBar(theBar);
 		fileMenu = new JMenu("File");
 		theBar.add(fileMenu);
+		newCanvas = new JMenuItem("New");
+		open = new JMenuItem("Open");
 		saveScene = new JMenuItem("Save");
+		saveAs = new JMenuItem("Save As");
+		saveAsJPG = new JMenuItem("Save As JPG");
 		endProgram = new JMenuItem("Exit");
+		fileMenu.add(newCanvas);
+		fileMenu.add(open);
 		fileMenu.add(saveScene);
+		fileMenu.add(saveAs);
+		fileMenu.add(saveAsJPG);
 		fileMenu.add(endProgram);
+		newCanvas.addActionListener(mhandler);
+		open.addActionListener(mhandler);
 		saveScene.addActionListener(mhandler);
+		saveAs.addActionListener(mhandler);
+		saveAsJPG.addActionListener(mhandler);
 		endProgram.addActionListener(mhandler);
 
 		editMenu = new JMenu("Edit");
@@ -180,7 +194,25 @@ public class Assig5B
                      shapeList.get(selindex).getColor());  // IMPLEMENT: getColor()
                 shapeList.get(selindex).setColor(newColor);  // IMPLEMENT: setColor()
                 drawPanel.repaint();
-            }	
+            }
+            else if (e.getSource() == pushBack)
+            {
+            	/**
+				CODE FOR PUSH TO BACK
+            	*/
+            }
+            else if (e.getSource() == newCanvas)
+            {
+            	/**
+				CODE FOR NEW
+            	*/
+            }
+            else if (e.getSource() == open)
+            {
+            	/**
+				CODE FOR OPEN
+            	*/
+            }
 			else if (e.getSource() == saveScene)
 			{
 				if (currFile == null)
@@ -189,6 +221,18 @@ public class Assig5B
 				}
 				saveImages();
 			}
+			else if (e.getSource() == saveAs)
+            {
+            	/**
+				CODE FOR SAVE AS
+            	*/
+            }
+            else if (e.getSource() == saveAsJPG)
+            {
+            	/**
+				CODE FOR SAVE AS JPG
+            	*/
+            }
 			else if (e.getSource() == endProgram)
 			{
 				System.exit(0);
@@ -443,7 +487,20 @@ public class Assig5B
 					y1 = y2;
                 }
 				repaint();
-			}  
+			}
+
+			public void mouseInPointCircle(MouseEvent e) {
+				x3 = e.getX();
+				y3 = e.getY();
+				if ((mode == DRAW || mode == MODIFY) && selindex >= 0)
+				{
+					MyPoly currPoly = shapeList.get(selindex);
+					if (currPoly.xyInPointCircle(x3, y3))
+					{
+						
+					}
+				}
+			}
 		} // end of MyMouser
 	} // end of ShapePanel
 }
