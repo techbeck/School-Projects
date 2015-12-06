@@ -70,7 +70,7 @@ public class MyPoly extends Polygon
     // This method is so simple I just figured I would give it to you. 	   
 	public void setHighlight(boolean b)
 	{
-		highlighted = b;	
+		highlighted = b;
 	}
     
     // Must override this method to add a new point circle along with new point on Polygon
@@ -109,7 +109,10 @@ public class MyPoly extends Polygon
 				from++;
 			}
 		}
-		return new MyPoly(tempX, tempY, npoints + 1, myColor);
+		MyPoly tempPoly = new MyPoly(tempX, tempY, npoints + 1, myColor);
+		// to keep polygon selected, set newly created MyPoly highlighted before returning.
+		tempPoly.setHighlight(true);
+		return tempPoly;
 	}
 	
 	// This method will return the index of the first point of the line segment that is
@@ -191,7 +194,10 @@ public class MyPoly extends Polygon
 				to++;
 			}
 		}
-		return new MyPoly(tempX, tempY, npoints - 1, myColor); 
+		MyPoly tempPoly = new MyPoly(tempX, tempY, npoints - 1, myColor);
+		// to keep polygon selected, set newly created MyPoly highlighted before returning.
+		tempPoly.setHighlight(true);
+		return tempPoly;
 	}
 
 	// If 3 or more points, super method works. If only 1 point, must be within point
@@ -238,14 +244,21 @@ public class MyPoly extends Polygon
 		// and the color).  Also special cases for MyPoly objects with only
 		// 1 or 2 points must be handled as well. For some help with this see
 		// handout MyRectangle2D
-
 		// Implement this method to draw the MyPoly onto the Graphics2D argument g.
 		// See MyRectangle2D.java for a simple example of doing this.  In the case of
 		// this MyPoly class the method is more complex, since you must handle the
 		// special cases of 1 point (draw only the point circle), 2 points (drow the
 		// line) and the case where the MyPoly is selected.  You must also use the
 		// color of the MyPoly in this method.
+
+
+		// If only one point present, point circle will always be displayed
+		if (npoints == 1) {
+			g.draw(thePoints.get(0));
+		}
+		// Both outline and filled in Polygon will be set color
 		g.setColor(myColor);
+		// If polygon selected, point circles will be displayed and outline will be drawn
 		if (highlighted)
 		{
 			for (Ellipse2D.Double e : thePoints)
@@ -293,5 +306,16 @@ public class MyPoly extends Polygon
 	{
 		return myColor;
 	}		
-	  
+	
+	public boolean xyInPointCircle(int x, int y)
+	{
+		for (int i = 0; i < npoints; i++)
+		{
+			if (thePoints.get(i).contains(x,y))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
 }

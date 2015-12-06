@@ -435,7 +435,7 @@ public class Assig5
 					y1 = y2;
                 }
 				repaint();
-			}  
+			}
 		} // end of MyMouser
 	} // end of ShapePanel
 }
