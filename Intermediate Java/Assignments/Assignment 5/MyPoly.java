@@ -15,6 +15,7 @@ public class MyPoly extends Polygon
 	 // that a circle will be created for every (x,y) point in the MyPoly.  To give you
 	 // a good start on this, I have implemented the constructors below.
 	 private ArrayList<Ellipse2D.Double> thePoints;
+	 private ArrayList<Boolean> pointsHighlighted;
 	 private Color myColor;
 	 private boolean highlighted;
 	 
@@ -25,6 +26,7 @@ public class MyPoly extends Polygon
 		super();
 		myColor = Color.BLACK;
 		thePoints = new ArrayList<Ellipse2D.Double>();
+		pointsHighlighted = new ArrayList<Boolean>();
 	}
 
 	// This constructor should be a lot of help to see the overall structure of the
@@ -38,6 +40,7 @@ public class MyPoly extends Polygon
 		super(xpts, ypts, npts);
 		myColor = col;
 		thePoints = new ArrayList<Ellipse2D.Double>();
+		pointsHighlighted = new ArrayList<Boolean>();
 		for (int i = 0; i < npts; i++)
 		{
 			int x = xpts[i];
@@ -53,6 +56,7 @@ public class MyPoly extends Polygon
 		Ellipse2D.Double temp = new Ellipse2D.Double(x, y, 8, 8);
 		temp.setFrameFromCenter(x, y, x+4, y+4);
 		thePoints.add(temp);
+		pointsHighlighted.add(false);
 	}
     
 	// Must override this method to translate point circles along with Polygon
@@ -259,11 +263,15 @@ public class MyPoly extends Polygon
 		// Both outline and filled in Polygon will be set color
 		g.setColor(myColor);
 		// If polygon selected, point circles will be displayed and outline will be drawn
-		if (highlighted)
+		if (highlighted && npoints > 1)
 		{
-			for (Ellipse2D.Double e : thePoints)
+			for (int i = 0; i < npoints; i++)
 			{
-				g.draw(e);
+				if (pointsHighlighted.get(i))
+				{
+					g.fill(thePoints.get(i));
+				}
+				g.draw(thePoints.get(i));
 			}
 		}
 		else
@@ -280,22 +288,27 @@ public class MyPoly extends Polygon
 		{
 			if (thePoints.get(i).contains(x,y))
 			{
+				System.out.println("checking: in");
 				return i;
 			}
 		}
+		System.out.println("checking: out");
 		return -1;
 	}
 
-	public void highlightPointCircle(int index, boolean yes)
+	public void highlightPointCircle(int index)
 	{
-		Ellipse2D.Double pointC = thePoints.get(index);
-		if (yes)
+		if (index >= 0)
 		{
-			// highlight
+			System.out.println("highlighting " + index);
+			pointsHighlighted.set(index, true);
 		}
 		else
 		{
-			// unhighlight
+			for (int i = 0; i < npoints; i++)
+			{
+				pointsHighlighted.set(i, false);
+			}
 		}
 	}
 	  

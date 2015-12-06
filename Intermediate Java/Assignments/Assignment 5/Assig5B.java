@@ -489,21 +489,17 @@ public class Assig5B
 				repaint();
 			}
 
-			public void mouseInPointCircle(MouseEvent e) {
+			public void mouseMoved(MouseEvent e) {
 				x3 = e.getX();
 				y3 = e.getY();
 				if (mode == MODIFY && selindex >= 0)
 				{
+					System.out.println("mouse moved");
 					MyPoly currPoly = shapeList.get(selindex);
 					int index = currPoly.checkIfXYInPointCircle(x3, y3);
-					if (index >= 0)
-					{
-						highlightPointCircle(index, true);
-					}
-					else
-					{
-						highlightPointCircle(index, false);
-					}
+					// will pass either index of point circle or -1 if x3,y3 not
+					// contained in point circle
+					currPoly.highlightPointCircle(index);
 				}
 			}
 		} // end of MyMouser
