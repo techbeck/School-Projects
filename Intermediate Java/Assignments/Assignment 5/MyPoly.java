@@ -237,10 +237,10 @@ public class MyPoly extends Polygon
 	
 	// Draw the MyPoly onto the Graphics2D argument g. When selected, the point circles
 	// will be drawn.
-	Graphics2D graph = null;
+	Graphics2D graphics = null;
 	public void draw(Graphics2D g)
 	{
-		graph = g;
+		graphics = g;
 		// IMPLEMENT: draw().  This method will utilize
 		// the predefined Graphics2D methods draw() (for the outline only,
 		// when the object is first being drawn or it is selected by the user) 
@@ -270,7 +270,7 @@ public class MyPoly extends Polygon
 			System.out.println(pointsHighlighted.get(i));
 			if (pointsHighlighted.get(i))
 			{
-				System.out.println("Fill");
+				System.out.println("Fill" + i);
 				g.fill(thePoints.get(i));
 			}
 		}
@@ -317,7 +317,7 @@ public class MyPoly extends Polygon
 				pointsHighlighted.set(i, false);
 			}
 		}
-		draw(graph);
+		draw(graphics);
 	}
 	  
 	public String fileData()

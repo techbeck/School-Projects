@@ -199,12 +199,19 @@ public class Assig5B
             {
             	MyPoly tempPoly = shapeList.remove(selindex);
             	shapeList.add(0, tempPoly);
+            	unSelectAll();
+            	drawPanel.repaint();
             }
             else if (e.getSource() == newCanvas)
             {
-            	/**
-				CODE FOR NEW
-            	*/
+            	if (currFile == null)
+				{
+					currFile = JOptionPane.showInputDialog(theFrame,"Enter file name");
+				}
+				saveImages();
+				shapeList = new ArrayList<MyPoly>();
+				drawPanel.repaint();
+				currFile = null;
             }
             else if (e.getSource() == open)
             {
@@ -222,9 +229,8 @@ public class Assig5B
 			}
 			else if (e.getSource() == saveAs)
             {
-            	/**
-				CODE FOR SAVE AS
-            	*/
+            	currFile = JOptionPane.showInputDialog(theFrame,"Enter file name");
+            	saveImages();
             }
             else if (e.getSource() == saveAsJPG)
             {
@@ -309,6 +315,15 @@ public class Assig5B
 		if (selindex >= 0)
 		{
 			shapeList.get(selindex).setHighlight(false);
+			selindex = -1;
+		}
+	}
+
+	public void unSelectAll()
+	{
+		for (int i = 0; i < shapeList.size(); i++)
+		{
+			shapeList.get(i).setHighlight(false);
 			selindex = -1;
 		}
 	}
