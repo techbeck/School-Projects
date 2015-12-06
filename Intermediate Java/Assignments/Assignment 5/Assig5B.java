@@ -35,7 +35,7 @@ public class Assig5B
 										// shapes will start
 	private String currFile;	// filename in which to save the scene
     
-    public Assig5()
+    public Assig5B()
     {				// Initialize the GUI
 		drawPanel = new ShapePanel(800, 500);
 		shapeList = new ArrayList<MyPoly>();
@@ -323,7 +323,7 @@ public class Assig5B
 	private class ShapePanel extends JPanel
 	{
 		private int prefwid, prefht;
-		private int x1, y1, x2, y2;    // used by mouse event handlers when drawing and
+		private int x1, y1, x2, y2, x3, y3;    // used by mouse event handlers when drawing and
 		                               // moving the shapes
 
 		private int mode;	// Since reaction to mouse is different if we are creating
@@ -492,12 +492,17 @@ public class Assig5B
 			public void mouseInPointCircle(MouseEvent e) {
 				x3 = e.getX();
 				y3 = e.getY();
-				if ((mode == DRAW || mode == MODIFY) && selindex >= 0)
+				if (mode == MODIFY && selindex >= 0)
 				{
 					MyPoly currPoly = shapeList.get(selindex);
-					if (currPoly.xyInPointCircle(x3, y3))
+					int index = currPoly.checkIfXYInPointCircle(x3, y3);
+					if (index >= 0)
 					{
-						
+						highlightPointCircle(index, true);
+					}
+					else
+					{
+						highlightPointCircle(index, false);
 					}
 				}
 			}

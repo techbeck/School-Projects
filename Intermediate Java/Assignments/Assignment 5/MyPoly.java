@@ -272,6 +272,32 @@ public class MyPoly extends Polygon
 		}
 		g.draw(this);
 	}
+
+
+	public int checkIfXYInPointCircle(int x, int y)
+	{
+		for (int i = 0; i < npoints; i++)
+		{
+			if (thePoints.get(i).contains(x,y))
+			{
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	public void highlightPointCircle(int index, boolean yes)
+	{
+		Ellipse2D.Double pointC = thePoints.get(index);
+		if (yes)
+		{
+			// highlight
+		}
+		else
+		{
+			// unhighlight
+		}
+	}
 	  
 	public String fileData()
 	{
@@ -306,16 +332,4 @@ public class MyPoly extends Polygon
 	{
 		return myColor;
 	}		
-	
-	public boolean xyInPointCircle(int x, int y)
-	{
-		for (int i = 0; i < npoints; i++)
-		{
-			if (thePoints.get(i).contains(x,y))
-			{
-				return true;
-			}
-		}
-		return false;
-	}
 }
