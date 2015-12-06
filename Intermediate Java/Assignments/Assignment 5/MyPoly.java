@@ -237,8 +237,10 @@ public class MyPoly extends Polygon
 	
 	// Draw the MyPoly onto the Graphics2D argument g. When selected, the point circles
 	// will be drawn.
+	Graphics2D graph = null;
 	public void draw(Graphics2D g)
 	{
+		graph = g;
 		// IMPLEMENT: draw().  This method will utilize
 		// the predefined Graphics2D methods draw() (for the outline only,
 		// when the object is first being drawn or it is selected by the user) 
@@ -255,23 +257,29 @@ public class MyPoly extends Polygon
 		// line) and the case where the MyPoly is selected.  You must also use the
 		// color of the MyPoly in this method.
 
-
+		// Both outline and filled in Polygon will be set color
+		g.setColor(myColor);
 		// If only one point present, point circle will always be displayed
 		if (npoints == 1) {
 			g.draw(thePoints.get(0));
+			return;
 		}
-		// Both outline and filled in Polygon will be set color
-		g.setColor(myColor);
-		// If polygon selected, point circles will be displayed and outline will be drawn
-		if (highlighted && npoints > 1)
+		System.out.println("drawing");
+		for (int i = 0; i < npoints; i++)
 		{
-			for (int i = 0; i < npoints; i++)
+			System.out.println(pointsHighlighted.get(i));
+			if (pointsHighlighted.get(i))
 			{
-				if (pointsHighlighted.get(i))
-				{
-					g.fill(thePoints.get(i));
-				}
-				g.draw(thePoints.get(i));
+				System.out.println("Fill");
+				g.fill(thePoints.get(i));
+			}
+		}
+		// If polygon selected, point circles will be displayed and outline will be drawn
+		if (highlighted)
+		{
+			for (Ellipse2D.Double e : thePoints)
+			{
+				g.draw(e);
 			}
 		}
 		else
@@ -286,13 +294,12 @@ public class MyPoly extends Polygon
 	{
 		for (int i = 0; i < npoints; i++)
 		{
+			System.out.println("checking" + i);
 			if (thePoints.get(i).contains(x,y))
 			{
-				System.out.println("checking: in");
 				return i;
 			}
 		}
-		System.out.println("checking: out");
 		return -1;
 	}
 
@@ -310,6 +317,7 @@ public class MyPoly extends Polygon
 				pointsHighlighted.set(i, false);
 			}
 		}
+		draw(graph);
 	}
 	  
 	public String fileData()

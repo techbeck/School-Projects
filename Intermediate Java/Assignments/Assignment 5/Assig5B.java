@@ -59,7 +59,7 @@ public class Assig5B
 		msg.setFont(new Font("TimesRoman", Font.BOLD, 14));
 		buttonPanel.add(msg);
 
-		theFrame = new JFrame("CS 0401 Assignment 5");
+		theFrame = new JFrame("CS 0401 Assignment 5B");
 		drawPanel.setBackground(Color.white);
 		theFrame.add(drawPanel, BorderLayout.NORTH);
 		theFrame.add(buttonPanel, BorderLayout.SOUTH);
@@ -197,9 +197,8 @@ public class Assig5B
             }
             else if (e.getSource() == pushBack)
             {
-            	/**
-				CODE FOR PUSH TO BACK
-            	*/
+            	MyPoly tempPoly = shapeList.remove(selindex);
+            	shapeList.add(0, tempPoly);
             }
             else if (e.getSource() == newCanvas)
             {
@@ -316,7 +315,7 @@ public class Assig5B
 
 	public static void main(String [] args)
 	{
-		new Assig5();
+		new Assig5B();
 	}
 
 	// Class to do the "drawing" in this program.  See more comments below.
@@ -494,7 +493,6 @@ public class Assig5B
 				y3 = e.getY();
 				if (mode == MODIFY && selindex >= 0)
 				{
-					System.out.println("mouse moved");
 					MyPoly currPoly = shapeList.get(selindex);
 					int index = currPoly.checkIfXYInPointCircle(x3, y3);
 					// will pass either index of point circle or -1 if x3,y3 not
