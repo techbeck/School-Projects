@@ -206,6 +206,7 @@ public class Assig5B
             	unSelectAll();
             	drawPanel.repaint();
             	modified = true;
+            	msg.setText("");
             }
             // Only needs to save if modification occurred.
             else if (e.getSource() == newCanvas)
@@ -213,13 +214,17 @@ public class Assig5B
             	if (modified)
             	{
 	            	int saveChoice = JOptionPane.showConfirmDialog(theFrame,"Save Scene?");
-	            	if (saveChoice == 1)
+	            	if (saveChoice == 0)
 	            	{
 	            		if (currFile == null)
 						{
 							currFile = JOptionPane.showInputDialog(theFrame,"Enter file name");
 						}
 						saveImages();
+	            	}
+	            	else if (saveChoice == 2)
+	            	{
+	            		return;
 	            	}
 	            }
 	            shapeList = new ArrayList<MyPoly>();
@@ -230,8 +235,8 @@ public class Assig5B
             {
             	if (modified)
             	{
-	            	int saveChoice = JOptionPane.showConfirmDialog(theFrame,"Save Scene?");
-	            	if (saveChoice == 1)
+            		int saveChoice = JOptionPane.showConfirmDialog(theFrame,"Save Scene?");
+	            	if (saveChoice == 0)
 	            	{
 	            		if (currFile == null)
 						{
@@ -240,6 +245,7 @@ public class Assig5B
 						saveImages();
 	            	}
 	            }
+	            System.out.println("Doesn't open anything yet.");
             }
             // Even if no modification occurred, will save if user clicks any of the save buttons
 			else if (e.getSource() == saveScene)
@@ -272,13 +278,17 @@ public class Assig5B
 				if (modified)
             	{
 	            	int saveChoice = JOptionPane.showConfirmDialog(theFrame,"Save Scene?");
-	            	if (saveChoice == 1)
+	            	if (saveChoice == 0)
 	            	{
 	            		if (currFile == null)
 						{
 							currFile = JOptionPane.showInputDialog(theFrame,"Enter file name");
 						}
 						saveImages();
+	            	}
+	            	else if (saveChoice == 2)
+	            	{
+	            		return;
 	            	}
 	            }
 				System.exit(0);
@@ -551,7 +561,7 @@ public class Assig5B
 			public void mouseMoved(MouseEvent e) {
 				x3 = e.getX();
 				y3 = e.getY();
-				if (mode == MODIFY && selindex >= 0)
+				if (selindex >= 0)
 				{
 					MyPoly currPoly = shapeList.get(selindex);
 					int index = currPoly.checkIfXYInPointCircle(x3, y3);

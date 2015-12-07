@@ -264,11 +264,8 @@ public class MyPoly extends Polygon
 			g.draw(thePoints.get(0));
 			return;
 		}
-		System.out.println("drawing");
 		for (int i = 0; i < npoints; i++)
-		{
-			System.out.println(pointsHighlighted.get(i));
-			if (pointsHighlighted.get(i))
+		{			if (pointsHighlighted.get(i))
 			{
 				System.out.println("Fill" + i);
 				g.fill(thePoints.get(i));
@@ -295,7 +292,6 @@ public class MyPoly extends Polygon
 	{
 		for (int i = 0; i < npoints; i++)
 		{
-			System.out.println("checking" + i);
 			if (thePoints.get(i).contains(x,y))
 			{
 				return i;
@@ -308,7 +304,6 @@ public class MyPoly extends Polygon
 	{
 		if (index >= 0)
 		{
-			System.out.println("highlighting " + index);
 			pointsHighlighted.set(index, true);
 		}
 		else
