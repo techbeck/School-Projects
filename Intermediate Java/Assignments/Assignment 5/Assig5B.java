@@ -207,13 +207,24 @@ public class Assig5B
             	drawPanel.repaint();
             	modified = true;
             	msg.setText("");
+            	delItem.setEnabled(false);
+				setColor.setEnabled(false);
+				pushBack.setEnabled(false);
             }
             // Only needs to save if modification occurred.
             else if (e.getSource() == newCanvas)
             {
             	if (modified)
             	{
-	            	int saveChoice = JOptionPane.showConfirmDialog(theFrame,"Save Scene?");
+	            	int saveChoice;
+            		if (currFile != null)
+            		{
+            			saveChoice = JOptionPane.showConfirmDialog(theFrame,"Save File " + currFile + "?");
+            		}
+            		else
+            		{
+            			saveChoice = JOptionPane.showConfirmDialog(theFrame,"Save Scene?");
+	            	}
 	            	if (saveChoice == 0)
 	            	{
 	            		if (currFile == null)
@@ -235,7 +246,15 @@ public class Assig5B
             {
             	if (modified)
             	{
-            		int saveChoice = JOptionPane.showConfirmDialog(theFrame,"Save Scene?");
+            		int saveChoice;
+            		if (currFile != null)
+            		{
+            			saveChoice = JOptionPane.showConfirmDialog(theFrame,"Save File " + currFile + "?");
+            		}
+            		else
+            		{
+            			saveChoice = JOptionPane.showConfirmDialog(theFrame,"Save Scene?");
+	            	}
 	            	if (saveChoice == 0)
 	            	{
 	            		if (currFile == null)
@@ -246,6 +265,10 @@ public class Assig5B
 	            	}
 	            }
 	            currFile = JOptionPane.showInputDialog(theFrame,"Enter file name to open");
+	            if (currFile == null)
+	            {
+	            	return;
+	            }
 	            try
 	            {
 	            	Scanner fileReader = new Scanner(new File(currFile));
@@ -270,7 +293,6 @@ public class Assig5B
 	            		shapeList.add(filePoly);
 	            	}
 	            	drawPanel.repaint();
-					currFile = null;
 	            }
 	            catch (IOException io)
 	            {

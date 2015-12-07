@@ -88,13 +88,6 @@ public class MyPoly extends Polygon
 	// in the MyPoly that it is "closest" to.
 	public MyPoly insertPoint(int x, int y)
 	{
-		// IMPLEMENT: insertPoint()
-		// Note that this method is not a mutator, but rather returns
-		// a NEW MyPoly object.  The new MyPoly will contain all of the 
-		// points in the selected MyPoly, but with (x1, y1) inserted 
-		// between the points closest to point (x1, y1).  For help with
-		// this see MyPoly.java and in particular the method
-		// getClosest().
 		int[] tempX = new int[npoints+1];
 		int[] tempY = new int[npoints+1];
 		int index = getClosest(x,y);
@@ -153,15 +146,6 @@ public class MyPoly extends Polygon
 	// null object will be returned.
 	public MyPoly removePoint(int x, int y)
 	{
-		// IMPLEMENT: removePoint()
-		// Note that this method is not a mutator, but rather returns
-		// a NEW MyPoly object.  If point (x1, y1) falls within one of
-		// the "point" circles of the MyPoly then the new MyPoly will not
-		// contain that point.  If (x1, y1) does not fall within any point
-		// circle then the original MyPoly will be returned. If, after the 
-		// removal of the point, no points are remaining in the MyPoly
-		// the removePoint() method will return null.  See more details in 
-		// MyPoly.java
 		boolean contained = false;
 		int index = 0;
 		for (int i = 0; i < npoints; i++)
@@ -239,15 +223,6 @@ public class MyPoly extends Polygon
 	// the point circles will be drawn.
 	public void draw(Graphics2D g)
 	{
-		// IMPLEMENT: draw().  This method will utilize
-		// the predefined Graphics2D methods draw() (for the outline only,
-		// when the object is first being drawn or it is selected by the user) 
-		// and fill() (for the filled in shape) for the "basic" Polygon
-		// but will require additional code to draw the enhancements added
-		// in MyPoly (ex: the circles indicating the points in the polygon
-		// and the color).  Also special cases for MyPoly objects with only
-		// 1 or 2 points must be handled as well. For some help with this see
-		// handout MyRectangle2D
 		// Implement this method to draw the MyPoly onto the Graphics2D argument g.
 		// See MyRectangle2D.java for a simple example of doing this.  In the case of
 		// this MyPoly class the method is more complex, since you must handle the
