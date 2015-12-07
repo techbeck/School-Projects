@@ -249,7 +249,27 @@ public class Assig5B
 	            try
 	            {
 	            	Scanner fileReader = new Scanner(new File(currFile));
-	            	System.out.println("Not yet opening");
+	            	shapeList = new ArrayList<MyPoly>();
+	            	int numPoly = Integer.parseInt(fileReader.nextLine());
+	            	for (int i = 0; i < numPoly; i++)
+	            	{
+	            		String[] data1 = fileReader.nextLine().split("|");
+	            		String[] rgb = data1[1].split(",");
+	            		Color polyColor = new Color(rgb[0],rgb[1],rgb[2]);
+	            		String[] points = data1[0].split(":");
+	            		int[] xCoor = new int[points.length];
+	            		int[] yCoor = new int[points.length];
+	            		for (int i = 0; i < points.length; i++)
+	            		{
+	            			String[] xy = points[i].split();
+	            			xCoor[i] = Integer.parseInt(xy[0]);
+	            			yCoor[i] = Integer.parseInt(xy[1]);
+	            		}
+	            		MyPoly filePoly = new MyPoly(xCoor,yCoor,points.length,polyColor);
+	            		shapeList.add(filePoly);
+	            	}
+	            	drawPanel.repaint();
+					currFile = null;
 	            }
 	            catch (IOException io)
 	            {
@@ -582,6 +602,7 @@ public class Assig5B
 					// will pass either index of point circle or -1 if x3,y3 not
 					// contained in point circle
 					currPoly.highlightPointCircle(index);
+					repaint();
 				}
 			}
 		} // end of MyMouser

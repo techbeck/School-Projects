@@ -257,11 +257,7 @@ public class MyPoly extends Polygon
 
 		// Both outline and filled in Polygon will be set color
 		g.setColor(myColor);
-		// If only one point present, point circle will always be displayed
-		if (npoints == 1) {
-			g.draw(thePoints.get(0));
-			return;
-		}
+		// If mouse is over point circle, it will be filled in.
 		for (int i = 0; i < npoints; i++)
 		{	
 			if (pointsHighlighted.get(i))
@@ -269,6 +265,11 @@ public class MyPoly extends Polygon
 				System.out.println("fill"+i);
 				g.fill(thePoints.get(i));
 			}
+		}
+		// If only one point present, point circle will always be displayed
+		if (npoints == 1) {
+			g.draw(thePoints.get(0));
+			return;
 		}
 		// If polygon selected, point circles will be displayed and outline will be drawn
 		if (highlighted)
