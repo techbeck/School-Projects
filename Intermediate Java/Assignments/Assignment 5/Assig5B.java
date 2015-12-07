@@ -218,7 +218,7 @@ public class Assig5B
 	            	{
 	            		if (currFile == null)
 						{
-							currFile = JOptionPane.showInputDialog(theFrame,"Enter file name");
+							currFile = JOptionPane.showInputDialog(theFrame,"Enter file name to save");
 						}
 						saveImages();
 	            	}
@@ -240,25 +240,37 @@ public class Assig5B
 	            	{
 	            		if (currFile == null)
 						{
-							currFile = JOptionPane.showInputDialog(theFrame,"Enter file name");
+							currFile = JOptionPane.showInputDialog(theFrame,"Enter file name to save");
 						}
 						saveImages();
 	            	}
 	            }
-	            System.out.println("Doesn't open anything yet.");
+	            currFile = JOptionPane.showInputDialog(theFrame,"Enter file name to open");
+	            try
+	            {
+	            	Scanner fileReader = new Scanner(new File(currFile));
+	            	System.out.println("Not yet opening");
+	            }
+	            catch (IOException io)
+	            {
+	            	JOptionPane.showMessageDialog(theFrame, "I/O Problem - File not Opened");
+	            	shapeList = new ArrayList<MyPoly>();
+					drawPanel.repaint();
+					currFile = null;
+	            }
             }
             // Even if no modification occurred, will save if user clicks any of the save buttons
 			else if (e.getSource() == saveScene)
 			{
 				if (currFile == null)
 				{
-					currFile = JOptionPane.showInputDialog(theFrame,"Enter file name");
+					currFile = JOptionPane.showInputDialog(theFrame,"Enter file name to save");
 				}
 				saveImages();
 			}
 			else if (e.getSource() == saveAs)
             {
-            	currFile = JOptionPane.showInputDialog(theFrame,"Enter file name");
+            	currFile = JOptionPane.showInputDialog(theFrame,"Enter file name to save");
             	saveImages();
             }
             else if (e.getSource() == saveAsJPG)
@@ -266,10 +278,12 @@ public class Assig5B
             	BufferedImage image = new BufferedImage(drawPanel.getWidth(), drawPanel.getHeight(), BufferedImage.TYPE_INT_RGB);
                 Graphics2D graphics2D = image.createGraphics(); 
                 drawPanel.paint(graphics2D);
-                try{
+                try
+                {
                     ImageIO.write(image,"jpg", new File(currFile + ".jpg"));
                 }
-                catch(Exception ex){
+                catch(Exception ex)
+                {
                      ex.printStackTrace();
                 }
             }

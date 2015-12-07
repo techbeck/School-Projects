@@ -237,7 +237,7 @@ public class MyPoly extends Polygon
 	
 	// Draw the MyPoly onto the Graphics2D argument g. When selected, the point circles
 	// will be drawn.
-	Graphics2D graphics = null;
+	Graphics2D graphics;
 	public void draw(Graphics2D g)
 	{
 		graphics = g;
@@ -265,11 +265,11 @@ public class MyPoly extends Polygon
 			return;
 		}
 		for (int i = 0; i < npoints; i++)
-		{			if (pointsHighlighted.get(i))
+		{	
+			if (pointsHighlighted.get(i))
 			{
 				System.out.println("Fill" + i);
 				g.fill(thePoints.get(i));
-				break;
 			}
 		}
 		// If polygon selected, point circles will be displayed and outline will be drawn
