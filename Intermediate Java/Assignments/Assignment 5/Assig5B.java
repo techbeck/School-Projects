@@ -575,7 +575,7 @@ public class Assig5B
 			public void mouseMoved(MouseEvent e) {
 				x3 = e.getX();
 				y3 = e.getY();
-				if (selindex >= 0)
+				if (mode == MODIFY && selindex >= 0)
 				{
 					MyPoly currPoly = shapeList.get(selindex);
 					int index = currPoly.checkIfXYInPointCircle(x3, y3);

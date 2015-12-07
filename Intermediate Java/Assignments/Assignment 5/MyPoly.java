@@ -235,12 +235,10 @@ public class MyPoly extends Polygon
 		return false;
 	}
 	
-	// Draw the MyPoly onto the Graphics2D argument g. When selected, the point circles
-	// will be drawn.
-	Graphics2D graphics;
+	// Draw the MyPoly onto the Graphics2D argument g. When polygon is selected, 
+	// the point circles will be drawn.
 	public void draw(Graphics2D g)
 	{
-		graphics = g;
 		// IMPLEMENT: draw().  This method will utilize
 		// the predefined Graphics2D methods draw() (for the outline only,
 		// when the object is first being drawn or it is selected by the user) 
@@ -268,7 +266,7 @@ public class MyPoly extends Polygon
 		{	
 			if (pointsHighlighted.get(i))
 			{
-				System.out.println("Fill" + i);
+				System.out.println("fill"+i);
 				g.fill(thePoints.get(i));
 			}
 		}
@@ -286,7 +284,6 @@ public class MyPoly extends Polygon
 		}
 		g.draw(this);
 	}
-
 
 	public int checkIfXYInPointCircle(int x, int y)
 	{
@@ -313,7 +310,6 @@ public class MyPoly extends Polygon
 				pointsHighlighted.set(i, false);
 			}
 		}
-		draw(graphics);
 	}
 	  
 	public String fileData()
