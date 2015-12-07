@@ -262,7 +262,6 @@ public class MyPoly extends Polygon
 		{	
 			if (pointsHighlighted.get(i))
 			{
-				System.out.println("fill"+i);
 				g.fill(thePoints.get(i));
 			}
 		}

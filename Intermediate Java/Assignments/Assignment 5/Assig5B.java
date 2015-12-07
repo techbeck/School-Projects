@@ -253,17 +253,18 @@ public class Assig5B
 	            	int numPoly = Integer.parseInt(fileReader.nextLine());
 	            	for (int i = 0; i < numPoly; i++)
 	            	{
-	            		String[] data1 = fileReader.nextLine().split("|");
+	            		String fileLine = fileReader.nextLine();
+	            		String[] data1 = fileLine.split("[|]");
 	            		String[] rgb = data1[1].split(",");
-	            		Color polyColor = new Color(rgb[0],rgb[1],rgb[2]);
+	            		Color polyColor = new Color(Integer.parseInt(rgb[0]),Integer.parseInt(rgb[1]),Integer.parseInt(rgb[2]));
 	            		String[] points = data1[0].split(":");
 	            		int[] xCoor = new int[points.length];
 	            		int[] yCoor = new int[points.length];
-	            		for (int i = 0; i < points.length; i++)
+	            		for (int j = 0; j < points.length; j++)
 	            		{
-	            			String[] xy = points[i].split();
-	            			xCoor[i] = Integer.parseInt(xy[0]);
-	            			yCoor[i] = Integer.parseInt(xy[1]);
+	            			String[] xy = points[j].split(",");
+	            			xCoor[j] = Integer.parseInt(xy[0]);
+	            			yCoor[j] = Integer.parseInt(xy[1]);
 	            		}
 	            		MyPoly filePoly = new MyPoly(xCoor,yCoor,points.length,polyColor);
 	            		shapeList.add(filePoly);
@@ -273,6 +274,7 @@ public class Assig5B
 	            }
 	            catch (IOException io)
 	            {
+	            	// If IO problem occurs, acts as if New was clicked.
 	            	JOptionPane.showMessageDialog(theFrame, "I/O Problem - File not Opened");
 	            	shapeList = new ArrayList<MyPoly>();
 					drawPanel.repaint();
@@ -293,8 +295,14 @@ public class Assig5B
             	currFile = JOptionPane.showInputDialog(theFrame,"Enter file name to save");
             	saveImages();
             }
+            // Saves to text file before creating JPG.
             else if (e.getSource() == saveAsJPG)
             {
+            	if (currFile == null)
+				{
+					currFile = JOptionPane.showInputDialog(theFrame,"Enter file name to save");
+				}
+				saveImages();
             	BufferedImage image = new BufferedImage(drawPanel.getWidth(), drawPanel.getHeight(), BufferedImage.TYPE_INT_RGB);
                 Graphics2D graphics2D = image.createGraphics(); 
                 drawPanel.paint(graphics2D);
