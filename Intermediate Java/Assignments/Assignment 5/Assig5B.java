@@ -11,6 +11,8 @@ import java.awt.geom.*;
 import java.awt.event.*;
 import java.util.*;
 import java.io.*;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 
 public class Assig5B
 {
@@ -34,6 +36,7 @@ public class Assig5B
 										// startInd is index where search within list of
 										// shapes will start
 	private String currFile;	// filename in which to save the scene
+	private boolean modified;
     
     public Assig5B()
     {				// Initialize the GUI
@@ -194,6 +197,7 @@ public class Assig5B
                      shapeList.get(selindex).getColor());  // IMPLEMENT: getColor()
                 shapeList.get(selindex).setColor(newColor);  // IMPLEMENT: setColor()
                 drawPanel.repaint();
+                modified = true;
             }
             else if (e.getSource() == pushBack)
             {
@@ -201,24 +205,43 @@ public class Assig5B
             	shapeList.add(0, tempPoly);
             	unSelectAll();
             	drawPanel.repaint();
+            	modified = true;
             }
+            // Only needs to save if modification occurred.
             else if (e.getSource() == newCanvas)
             {
-            	if (currFile == null)
-				{
-					currFile = JOptionPane.showInputDialog(theFrame,"Enter file name");
-				}
-				saveImages();
-				shapeList = new ArrayList<MyPoly>();
+            	if (modified)
+            	{
+	            	int saveChoice = JOptionPane.showConfirmDialog(theFrame,"Save Scene?");
+	            	if (saveChoice == 1)
+	            	{
+	            		if (currFile == null)
+						{
+							currFile = JOptionPane.showInputDialog(theFrame,"Enter file name");
+						}
+						saveImages();
+	            	}
+	            }
+	            shapeList = new ArrayList<MyPoly>();
 				drawPanel.repaint();
 				currFile = null;
             }
             else if (e.getSource() == open)
             {
-            	/**
-				CODE FOR OPEN
-            	*/
+            	if (modified)
+            	{
+	            	int saveChoice = JOptionPane.showConfirmDialog(theFrame,"Save Scene?");
+	            	if (saveChoice == 1)
+	            	{
+	            		if (currFile == null)
+						{
+							currFile = JOptionPane.showInputDialog(theFrame,"Enter file name");
+						}
+						saveImages();
+	            	}
+	            }
             }
+            // Even if no modification occurred, will save if user clicks any of the save buttons
 			else if (e.getSource() == saveScene)
 			{
 				if (currFile == null)
@@ -234,12 +257,30 @@ public class Assig5B
             }
             else if (e.getSource() == saveAsJPG)
             {
-            	/**
-				CODE FOR SAVE AS JPG
-            	*/
+            	BufferedImage image = new BufferedImage(drawPanel.getWidth(), drawPanel.getHeight(), BufferedImage.TYPE_INT_RGB);
+                Graphics2D graphics2D = image.createGraphics(); 
+                drawPanel.paint(graphics2D);
+                try{
+                    ImageIO.write(image,"jpg", new File(currFile + ".jpg"));
+                }
+                catch(Exception ex){
+                     ex.printStackTrace();
+                }
             }
 			else if (e.getSource() == endProgram)
 			{
+				if (modified)
+            	{
+	            	int saveChoice = JOptionPane.showConfirmDialog(theFrame,"Save Scene?");
+	            	if (saveChoice == 1)
+	            	{
+	            		if (currFile == null)
+						{
+							currFile = JOptionPane.showInputDialog(theFrame,"Enter file name");
+						}
+						saveImages();
+	            	}
+	            }
 				System.exit(0);
 			}
 		}
@@ -264,12 +305,14 @@ public class Assig5B
 		{ 
 			JOptionPane.showMessageDialog(theFrame, "I/O Problem - File not Saved");
 		}
+		modified = false;
 	}
 	
 	private void addshape(MyPoly newshape)
 	{
 		shapeList.add(newshape);
 		drawPanel.repaint();
+		modified = true;
 	}
 	
 	// Method to select the MyPoly object located in location (x, y).  If more than one
@@ -448,6 +491,7 @@ public class Assig5B
 							// between the points closest to point (x1, y1).  For help with
 							// this see MyPoly.java and in particular the method
 							// getClosest().
+						modified = true;
 					}
 					else if (e.getButton() == 3)
 					{
@@ -461,6 +505,7 @@ public class Assig5B
 							// removal of the point, no points are remaining in the MyPoly
 							// the removePoint() method will return null.  See more details in 
 							// MyPoly.java
+						modified = true;
 					}
 					if (currPoly != null)
 						shapeList.set(selindex, currPoly);

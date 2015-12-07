@@ -308,7 +308,7 @@ public class Assig5
 			return new Dimension(prefwid, prefht);
 		}
 
-		public void paintComponent (Graphics g) // Method to paint contents of panel
+		public void paintComponent (Graphics g)	// Method to paint contents of panel
 		{
 			super.paintComponent(g);  // super call needed here
 			Graphics2D g2d = (Graphics2D) g;
@@ -435,7 +435,7 @@ public class Assig5
 					y1 = y2;
                 }
 				repaint();
-			}
+			}  
 		} // end of MyMouser
 	} // end of ShapePanel
 }

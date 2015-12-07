@@ -272,6 +272,7 @@ public class MyPoly extends Polygon
 			{
 				System.out.println("Fill" + i);
 				g.fill(thePoints.get(i));
+				break;
 			}
 		}
 		// If polygon selected, point circles will be displayed and outline will be drawn
