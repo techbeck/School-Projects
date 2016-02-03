@@ -26,7 +26,15 @@ public class Tester
 		}
 		if (ints.getProbabilityOf(5) == 3/5)
 		{
-			System.out.println("prob: pass");
+			System.out.println("prob 5: pass");
+		}
+		if (ints.getProbabilityOf(3) == 1/5)
+		{
+			System.out.println("prob 3: pass");
+		}
+		if (ints.getProbabilityOf(0) == 0)
+		{
+			System.out.println("prob 0: pass");
 		}
 	}
 }

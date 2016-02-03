@@ -30,7 +30,7 @@ public class FrequencyBag<T>
 		}
 		Node currentNode = firstNode;
 		boolean found = false;
-		for (int i = 0; i < numberOfEntries; i++)
+		for (int i = 0; i < numberOfEntries && currentNode != null; i++)
 		{
 			if (currentNode.data.equals(aData))
 			{
@@ -45,8 +45,8 @@ public class FrequencyBag<T>
 			Node newNode = new Node(aData);
 			newNode.next = firstNode;
 			firstNode = newNode;
-			numberOfEntries++;
 		}
+		numberOfEntries++;
 	}
 	
 	/**
@@ -58,7 +58,7 @@ public class FrequencyBag<T>
 	{
 		Node currentNode = firstNode;
 		boolean found = false;
-		for (int i = 0; i < numberOfEntries; i++)
+		for (int i = 0; i < numberOfEntries && currentNode != null; i++)
 		{
 			if (currentNode.data.equals(aData))
 			{
@@ -83,7 +83,7 @@ public class FrequencyBag<T>
 	{
 		int maxFrequency = 0;
 		Node currentNode = firstNode;
-		for (int i = 0; i < numberOfEntries; i++)
+		for (int i = 0; i < numberOfEntries && currentNode != null; i++)
 		{
 			if (currentNode.frequency > maxFrequency)
 			{
@@ -101,15 +101,9 @@ public class FrequencyBag<T>
 	 */
 	public double getProbabilityOf(T aData)
 	{
-		// TO DO
-		int totalFrequency = 0;
 		Node currentNode = firstNode;
-		for (int i = 0; i < numberOfEntries; i++)
-		{
-			totalFrequency = totalFrequency + currentNode.frequency;
-			currentNode = currentNode.next;
-		}
-		return getFrequencyOf(aData)/totalFrequency;
+		double probability = getFrequencyOf(aData)/ (double)numberOfEntries;
+		return probability;
 	}
 
 	/**
@@ -118,6 +112,7 @@ public class FrequencyBag<T>
 	public void clear()
 	{
 		firstNode = null;
+		numberOfEntries = 0;
 	}
 	
 	/**
