@@ -30,7 +30,7 @@ public class FrequencyBag<T>
 		}
 		Node currentNode = firstNode;
 		boolean found = false;
-		for (int i = 0; i < numberOfEntries && currentNode != null; i++)
+		while (currentNode != null)
 		{
 			if (currentNode.data.equals(aData))
 			{
@@ -57,19 +57,13 @@ public class FrequencyBag<T>
 	public int getFrequencyOf(T aData)
 	{
 		Node currentNode = firstNode;
-		boolean found = false;
-		for (int i = 0; i < numberOfEntries && currentNode != null; i++)
+		while (currentNode != null)
 		{
 			if (currentNode.data.equals(aData))
 			{
-				found = true;
-				break;
+				return currentNode.frequency;
 			}
 			currentNode = currentNode.next;
-		}
-		if (found)
-		{
-			return currentNode.frequency;
 		}
 		return 0;
 	}
@@ -83,7 +77,7 @@ public class FrequencyBag<T>
 	{
 		int maxFrequency = 0;
 		Node currentNode = firstNode;
-		for (int i = 0; i < numberOfEntries && currentNode != null; i++)
+		while (currentNode != null)
 		{
 			if (currentNode.frequency > maxFrequency)
 			{
