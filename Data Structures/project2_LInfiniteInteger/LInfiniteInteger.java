@@ -136,13 +136,13 @@ public class LInfiniteInteger implements InfiniteIntegerInterface
 				//-big + small
 				result = thisAbs.subtractAbsoluteValues(otherAbs);
 				result.isNegative = true;
-				return result;
+				return new LInfiniteInteger(result.toString());
 			}
 			else
 			{
 				//-small + big
 				result = otherAbs.subtractAbsoluteValues(thisAbs);
-				return result;
+				return new LInfiniteInteger(result.toString());
 			}
 		}
 		else
@@ -151,14 +151,14 @@ public class LInfiniteInteger implements InfiniteIntegerInterface
 			{
 				//big + -small
 				result = thisAbs.subtractAbsoluteValues(otherAbs);
-				return result;
+				return new LInfiniteInteger(result.toString());
 			}
 			else
 			{
 				//small + -big
 				result = otherAbs.subtractAbsoluteValues(thisAbs);
 				result.isNegative = true;
-				return result;
+				return new LInfiniteInteger(result.toString());
 			}	
 		}
 	}
@@ -175,6 +175,10 @@ public class LInfiniteInteger implements InfiniteIntegerInterface
 		LInfiniteInteger thisAbs = this.getAbsoluteValue();
 		LInfiniteInteger otherAbs = otherInteger.getAbsoluteValue();
 		LInfiniteInteger result = null;
+		if (this.compareTo(otherInteger) == 0)
+		{
+			return new LInfiniteInteger(0);
+		}
 		if (this.isNegative == false && otherInteger.isNegative)
 		{
 			//positive - negative
@@ -194,16 +198,31 @@ public class LInfiniteInteger implements InfiniteIntegerInterface
 				//-big - -small
 				result = thisAbs.subtractAbsoluteValues(otherAbs);
 				result.isNegative = true;
-				return result;
+				return new LInfiniteInteger(result.toString());
 			}
-			if (otherAbs.compareTo(thisAbs) == 1)
+			else
 			{
 				//-small - -big
 				result = otherAbs.subtractAbsoluteValues(thisAbs);
-				return result;
+				return new LInfiniteInteger(result.toString());
 			}
 		}
-		return null;
+		else
+		{
+			if (thisAbs.compareTo(otherAbs) == 1)
+			{
+				//big - small
+				result = thisAbs.subtractAbsoluteValues(otherAbs);
+				return new LInfiniteInteger(result.toString());
+			}
+			else
+			{
+				//small - big
+				result = otherAbs.subtractAbsoluteValues(thisAbs);
+				result.isNegative = true;
+				return new LInfiniteInteger(result.toString());
+			}
+		}
 	}
 
 	private LInfiniteInteger addAbsoluteValues(LInfiniteInteger otherInteger)
@@ -241,14 +260,7 @@ public class LInfiniteInteger implements InfiniteIntegerInterface
 			carryOut = partialSum / 10;
 			partialSum = partialSum % 10;
 			sumCurrentNode = new Node(null, partialSum, sumNextNode);
-			if (sumNextNode == null)
-			{
-				sum.lastNode = sumCurrentNode;
-			}
-			else
-			{
-				sumNextNode.previous = sumCurrentNode;
-			}
+			sumNextNode.previous = sumCurrentNode;
 			sum.firstNode = sumCurrentNode;
 			sumNextNode = sumCurrentNode;
 			sum.numberOfDigits = sum.numberOfDigits + 1;
@@ -260,14 +272,7 @@ public class LInfiniteInteger implements InfiniteIntegerInterface
 			carryOut = partialSum / 10;
 			partialSum = partialSum % 10;
 			sumCurrentNode = new Node(null, partialSum, sumNextNode);
-			if (sumNextNode == null)
-			{
-				sum.lastNode = sumCurrentNode;
-			}
-			else
-			{
-				sumNextNode.previous = sumCurrentNode;
-			}
+			sumNextNode.previous = sumCurrentNode;
 			sum.firstNode = sumCurrentNode;
 			sumNextNode = sumCurrentNode;
 			sum.numberOfDigits = sum.numberOfDigits + 1;
@@ -324,16 +329,17 @@ public class LInfiniteInteger implements InfiniteIntegerInterface
 		while (thisCurrentNode != null)
 		{
 			currentInt = thisCurrentNode.data - carryIn;
-			carryIn = 0;
-			diffCurrentNode = new Node(null, currentInt, diffNextNode);
-			if (diffNextNode == null)
+			if (currentInt < 0)
 			{
-				diff.lastNode = diffCurrentNode;
+				carryIn = 1;
+				currentInt = currentInt + 10;
 			}
 			else
 			{
-				diffNextNode.previous = diffCurrentNode;
+				carryIn = 0;
 			}
+			diffCurrentNode = new Node(null, currentInt, diffNextNode);
+			diffNextNode.previous = diffCurrentNode;
 			diff.firstNode = diffCurrentNode;
 			diffNextNode = diffCurrentNode;
 			diff.numberOfDigits = diff.numberOfDigits + 1;
