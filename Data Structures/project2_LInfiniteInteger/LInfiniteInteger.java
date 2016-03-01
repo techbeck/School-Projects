@@ -109,19 +109,58 @@ public class LInfiniteInteger implements InfiniteIntegerInterface
 	public InfiniteIntegerInterface plus(final InfiniteIntegerInterface anInfiniteInteger)
 	{
 		LInfiniteInteger otherInteger = (LInfiniteInteger) anInfiniteInteger;
-		if (isNegative == false && anInfiniteInteger.isNegative() == false)
+		LInfiniteInteger thisAbs = this.getAbsoluteValue();
+		LInfiniteInteger otherAbs = otherInteger.getAbsoluteValue();
+		LInfiniteInteger result = null;
+		if (this.isNegative == false && otherInteger.isNegative == false)
 		{
-			return this.addAbsoluteValues(anInfiniteInteger);
+			//positive + positive
+			result = thisAbs.addAbsoluteValues(otherAbs);
+			return result;
 		}
-		if (isNegative && otherInteger.isNegative())
+		if (this.isNegative && otherInteger.isNegative)
 		{
-			LInfiniteInteger sum = this.addAbsoluteValues(anInfiniteInteger);
-			sum.isNegative = true;
-			return sum;
-		}		
-		// TO DO
-		System.out.println("Not here yet");
-		return null;
+			//negative + negative
+			result = thisAbs.addAbsoluteValues(otherAbs);
+			result.isNegative = true;
+			return result;
+		}
+		if (thisAbs.compareTo(otherAbs) == 0)
+		{
+			return new LInfiniteInteger(0);
+		}
+		if (this.isNegative)
+		{
+			if (thisAbs.compareTo(otherAbs) == 1)
+			{
+				//-big + small
+				result = thisAbs.subtractAbsoluteValues(otherAbs);
+				result.isNegative = true;
+				return result;
+			}
+			else
+			{
+				//-small + big
+				result = otherAbs.subtractAbsoluteValues(thisAbs);
+				return result;
+			}
+		}
+		else
+		{
+			if (thisAbs.compareTo(otherAbs) == 1)
+			{
+				//big + -small
+				result = thisAbs.subtractAbsoluteValues(otherAbs);
+				return result;
+			}
+			else
+			{
+				//small + -big
+				result = otherAbs.subtractAbsoluteValues(thisAbs);
+				result.isNegative = true;
+				return result;
+			}	
+		}
 	}
 
 	/**
@@ -132,19 +171,47 @@ public class LInfiniteInteger implements InfiniteIntegerInterface
 	 */
 	public InfiniteIntegerInterface minus(final InfiniteIntegerInterface anInfiniteInteger)
 	{
-		// TO DO
+		LInfiniteInteger otherInteger = (LInfiniteInteger) anInfiniteInteger;
+		LInfiniteInteger thisAbs = this.getAbsoluteValue();
+		LInfiniteInteger otherAbs = otherInteger.getAbsoluteValue();
+		LInfiniteInteger result = null;
+		if (this.isNegative == false && otherInteger.isNegative)
+		{
+			//positive - negative
+			return thisAbs.addAbsoluteValues(otherAbs);
+		}
+		if (this.isNegative && otherInteger.isNegative == false)
+		{
+			//negative - positive
+			result = thisAbs.addAbsoluteValues(otherAbs);
+			result.isNegative = true;
+			return result;
+		}
+		if (this.isNegative)
+		{
+			if (thisAbs.compareTo(otherAbs) == 1)
+			{
+				//-big - -small
+				result = thisAbs.subtractAbsoluteValues(otherAbs);
+				result.isNegative = true;
+				return result;
+			}
+			if (otherAbs.compareTo(thisAbs) == 1)
+			{
+				//-small - -big
+				result = otherAbs.subtractAbsoluteValues(thisAbs);
+				return result;
+			}
+		}
 		return null;
 	}
 
-	private LInfiniteInteger addAbsoluteValues(final InfiniteIntegerInterface anInfiniteInteger)
+	private LInfiniteInteger addAbsoluteValues(LInfiniteInteger otherInteger)
 	{
-		LInfiniteInteger thisInteger = this.getAbsoluteValue();
-		LInfiniteInteger otherInteger = (LInfiniteInteger) anInfiniteInteger;
-		otherInteger = otherInteger.getAbsoluteValue();
 		LInfiniteInteger sum = new LInfiniteInteger(0);
 		int carryOut = 0;
 		int partialSum = 0;
-		Node thisCurrentNode = thisInteger.lastNode;
+		Node thisCurrentNode = this.lastNode;
 		Node otherCurrentNode = otherInteger.lastNode;
 		Node sumCurrentNode = sum.lastNode;
 		Node sumNextNode = null;
@@ -215,6 +282,65 @@ public class LInfiniteInteger implements InfiniteIntegerInterface
 		}
 		return sum;
 	}
+
+	private LInfiniteInteger subtractAbsoluteValues(LInfiniteInteger otherInteger)
+	{
+		LInfiniteInteger diff = new LInfiniteInteger(0);
+		int carryIn = 0;
+		int partialDiff = 0;
+		int currentInt = 0;
+		Node thisCurrentNode = this.lastNode;
+		Node otherCurrentNode = otherInteger.lastNode;
+		Node diffCurrentNode = diff.lastNode;
+		Node diffNextNode = null;
+		while (thisCurrentNode != null && otherCurrentNode != null)
+		{
+			currentInt = thisCurrentNode.data - carryIn;
+			if ((currentInt - otherCurrentNode.data) < 0)
+			{
+				carryIn = 1;
+				currentInt = currentInt + 10;
+			}
+			else
+			{
+				carryIn = 0;
+			}
+			partialDiff = currentInt - otherCurrentNode.data;
+			diffCurrentNode = new Node(null, partialDiff, diffNextNode);
+			if (diffNextNode == null)
+			{
+				diff.lastNode = diffCurrentNode;
+			}
+			else
+			{
+				diffNextNode.previous = diffCurrentNode;
+			}
+			diff.firstNode = diffCurrentNode;
+			diffNextNode = diffCurrentNode;
+			diff.numberOfDigits = diff.numberOfDigits + 1;
+			thisCurrentNode = thisCurrentNode.previous;
+			otherCurrentNode = otherCurrentNode.previous;
+		}
+		while (thisCurrentNode != null)
+		{
+			currentInt = thisCurrentNode.data - carryIn;
+			carryIn = 0;
+			diffCurrentNode = new Node(null, currentInt, diffNextNode);
+			if (diffNextNode == null)
+			{
+				diff.lastNode = diffCurrentNode;
+			}
+			else
+			{
+				diffNextNode.previous = diffCurrentNode;
+			}
+			diff.firstNode = diffCurrentNode;
+			diffNextNode = diffCurrentNode;
+			diff.numberOfDigits = diff.numberOfDigits + 1;
+			thisCurrentNode = thisCurrentNode.previous;
+		}
+		return diff;
+	}
 	
 	/**
 	 * Generates a string representing this infinite integer. If this infinite integer
@@ -227,11 +353,11 @@ public class LInfiniteInteger implements InfiniteIntegerInterface
 	{
 		String s = new String();
 		Node currentNode = firstNode;
-		if(isNegative)
+		if (isNegative)
 		{
 			s = "-";
 		}
-		while(currentNode != null)
+		while (currentNode != null)
 		{
 			s = s + currentNode.data;
 			currentNode = currentNode.next;
@@ -249,11 +375,11 @@ public class LInfiniteInteger implements InfiniteIntegerInterface
 	public int compareTo(final InfiniteIntegerInterface anInfiniteInteger)
 	{
 		LInfiniteInteger otherInteger = (LInfiniteInteger) anInfiniteInteger;
-		if(this.isNegative && otherInteger.isNegative == false)
+		if (this.isNegative && otherInteger.isNegative == false)
 		{
 			return -1;
 		}
-		if(this.isNegative == false && otherInteger.isNegative)
+		if (this.isNegative == false && otherInteger.isNegative)
 		{
 			return 1;
 		}
@@ -270,7 +396,7 @@ public class LInfiniteInteger implements InfiniteIntegerInterface
 			{
 				return -1;
 			}
-			while(thisCurrentNode != null)
+			while (thisCurrentNode != null)
 			{
 				if (thisCurrentNode.data < otherCurrentNode.data)
 				{
@@ -296,7 +422,7 @@ public class LInfiniteInteger implements InfiniteIntegerInterface
 			{
 				return -1;
 			}
-			while(thisCurrentNode != null)
+			while (thisCurrentNode != null)
 			{
 				if (thisCurrentNode.data > otherCurrentNode.data)
 				{
