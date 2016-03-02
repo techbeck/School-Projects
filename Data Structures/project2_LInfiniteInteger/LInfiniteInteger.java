@@ -248,25 +248,13 @@ public class LInfiniteInteger implements InfiniteIntegerInterface
 		int partialSum = 0;
 		Node thisCurrentNode = this.lastNode;
 		Node otherCurrentNode = otherInteger.lastNode;
-		Node sumCurrentNode = sum.lastNode;
 		Node sumNextNode = null;
 		while (thisCurrentNode != null && otherCurrentNode != null)
 		{
 			partialSum = thisCurrentNode.data + otherCurrentNode.data + carryOut;
 			carryOut = partialSum / 10;
 			partialSum = partialSum % 10;
-			sumCurrentNode = new Node(null, partialSum, sumNextNode);
-			if (sumNextNode == null)
-			{
-				sum.lastNode = sumCurrentNode;
-			}
-			else
-			{
-				sumNextNode.previous = sumCurrentNode;
-			}
-			sum.firstNode = sumCurrentNode;
-			sumNextNode = sumCurrentNode;
-			sum.numberOfDigits = sum.numberOfDigits + 1;
+			sumNextNode = sum.addToStart(sumNextNode, partialSum);
 			thisCurrentNode = thisCurrentNode.previous;
 			otherCurrentNode = otherCurrentNode.previous;
 		}
@@ -275,11 +263,7 @@ public class LInfiniteInteger implements InfiniteIntegerInterface
 			partialSum = thisCurrentNode.data + carryOut;
 			carryOut = partialSum / 10;
 			partialSum = partialSum % 10;
-			sumCurrentNode = new Node(null, partialSum, sumNextNode);
-			sumNextNode.previous = sumCurrentNode;
-			sum.firstNode = sumCurrentNode;
-			sumNextNode = sumCurrentNode;
-			sum.numberOfDigits = sum.numberOfDigits + 1;
+			sumNextNode = sum.addToStart(sumNextNode, partialSum);
 			thisCurrentNode = thisCurrentNode.previous;
 		}
 		while (otherCurrentNode != null)
@@ -287,19 +271,12 @@ public class LInfiniteInteger implements InfiniteIntegerInterface
 			partialSum = otherCurrentNode.data + carryOut;
 			carryOut = partialSum / 10;
 			partialSum = partialSum % 10;
-			sumCurrentNode = new Node(null, partialSum, sumNextNode);
-			sumNextNode.previous = sumCurrentNode;
-			sum.firstNode = sumCurrentNode;
-			sumNextNode = sumCurrentNode;
-			sum.numberOfDigits = sum.numberOfDigits + 1;
+			sumNextNode = sum.addToStart(sumNextNode, partialSum);
 			otherCurrentNode = otherCurrentNode.previous;
 		}
 		if (carryOut > 0)
 		{
-			sumCurrentNode = new Node(null, carryOut, sumNextNode);
-			sumNextNode.previous = sumCurrentNode;
-			sum.firstNode = sumCurrentNode;
-			sum.numberOfDigits = sum.numberOfDigits + 1;
+			sum.addToStart(sumNextNode, carryOut);
 		}
 		return sum;
 	}
@@ -307,61 +284,61 @@ public class LInfiniteInteger implements InfiniteIntegerInterface
 	private LInfiniteInteger subtractAbsoluteValues(LInfiniteInteger otherInteger)
 	{
 		LInfiniteInteger diff = new LInfiniteInteger(0);
-		int carryIn = 0;
-		int partialDiff = 0;
-		int currentInt = 0;
-		Node thisCurrentNode = this.lastNode;
-		Node otherCurrentNode = otherInteger.lastNode;
-		Node diffCurrentNode = diff.lastNode;
-		Node diffNextNode = null;
-		while (thisCurrentNode != null && otherCurrentNode != null)
-		{
-			currentInt = thisCurrentNode.data - carryIn;
-			if ((currentInt - otherCurrentNode.data) < 0)
-			{
-				carryIn = 1;
-				currentInt = currentInt + 10;
-			}
-			else
-			{
-				carryIn = 0;
-			}
-			partialDiff = currentInt - otherCurrentNode.data;
-			diffCurrentNode = new Node(null, partialDiff, diffNextNode);
-			if (diffNextNode == null)
-			{
-				diff.lastNode = diffCurrentNode;
-			}
-			else
-			{
-				diffNextNode.previous = diffCurrentNode;
-			}
-			diff.firstNode = diffCurrentNode;
-			diffNextNode = diffCurrentNode;
-			diff.numberOfDigits = diff.numberOfDigits + 1;
-			thisCurrentNode = thisCurrentNode.previous;
-			otherCurrentNode = otherCurrentNode.previous;
-		}
-		while (thisCurrentNode != null)
-		{
-			currentInt = thisCurrentNode.data - carryIn;
-			if (currentInt < 0)
-			{
-				carryIn = 1;
-				currentInt = currentInt + 10;
-			}
-			else
-			{
-				carryIn = 0;
-			}
-			diffCurrentNode = new Node(null, currentInt, diffNextNode);
-			diffNextNode.previous = diffCurrentNode;
-			diff.firstNode = diffCurrentNode;
-			diffNextNode = diffCurrentNode;
-			diff.numberOfDigits = diff.numberOfDigits + 1;
-			thisCurrentNode = thisCurrentNode.previous;
-		}
-		return diff;
+				int carryIn = 0;
+				int partialDiff = 0;
+				int currentInt = 0;
+				Node thisCurrentNode = this.lastNode;
+				Node otherCurrentNode = otherInteger.lastNode;
+				Node diffCurrentNode = diff.lastNode;
+				Node diffNextNode = null;
+				while (thisCurrentNode != null && otherCurrentNode != null)
+				{
+					currentInt = thisCurrentNode.data - carryIn;
+					if ((currentInt - otherCurrentNode.data) < 0)
+					{
+						carryIn = 1;
+						currentInt = currentInt + 10;
+					}
+					else
+					{
+						carryIn = 0;
+					}
+					partialDiff = currentInt - otherCurrentNode.data;
+					diffCurrentNode = new Node(null, partialDiff, diffNextNode);
+					if (diffNextNode == null)
+					{
+						diff.lastNode = diffCurrentNode;
+					}
+					else
+					{
+						diffNextNode.previous = diffCurrentNode;
+					}
+					diff.firstNode = diffCurrentNode;
+					diffNextNode = diffCurrentNode;
+					diff.numberOfDigits = diff.numberOfDigits + 1;
+					thisCurrentNode = thisCurrentNode.previous;
+					otherCurrentNode = otherCurrentNode.previous;
+				}
+				while (thisCurrentNode != null)
+				{
+					currentInt = thisCurrentNode.data - carryIn;
+					if (currentInt < 0)
+					{
+						carryIn = 1;
+						currentInt = currentInt + 10;
+					}
+					else
+					{
+						carryIn = 0;
+					}
+					diffCurrentNode = new Node(null, currentInt, diffNextNode);
+					diffNextNode.previous = diffCurrentNode;
+					diff.firstNode = diffCurrentNode;
+					diffNextNode = diffCurrentNode;
+					diff.numberOfDigits = diff.numberOfDigits + 1;
+					thisCurrentNode = thisCurrentNode.previous;
+				}
+				return diff;
 	}
 	
 	/**
