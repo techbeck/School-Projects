@@ -21,23 +21,11 @@ public class LInfiniteInteger implements InfiniteIntegerInterface
 		}
 		s = s.replaceFirst("^0+(?!$)", "");
 		String[] digits = s.split("");
-		Node currentNode;
 		Node previousNode = null;
 		for (int i = 0; i < digits.length; i++)
 		{
-			int currentDigit = Integer.parseInt(digits[i]);
-			currentNode = new Node(previousNode, currentDigit, null);
-			if (previousNode == null)
-			{
-				firstNode = currentNode;
-			}
-			else
-			{
-				previousNode.next = currentNode;
-			}
-			lastNode = currentNode;
-			previousNode = currentNode;
-			numberOfDigits++;
+			int digit = Integer.parseInt(digits[i]);
+			previousNode = addToEnd(previousNode, digit);
 		}
 	}
 
@@ -59,24 +47,45 @@ public class LInfiniteInteger implements InfiniteIntegerInterface
 			isNegative = true;
 			anInteger = anInteger + (-2*anInteger);
 		}
-		Node currentNode;
 		Node nextNode = null;
 		while (anInteger > 0)
 		{
-			currentNode = new Node(null, anInteger % 10, nextNode);
-			if (nextNode == null)
-			{
-				lastNode = currentNode;
-			}
-			else
-			{
-				nextNode.previous = currentNode;
-			}
-			firstNode = currentNode;
-			nextNode = currentNode;
+			int digit = anInteger % 10;
 			anInteger = anInteger / 10;
-			numberOfDigits++;
+			nextNode = addToStart(nextNode, digit);
 		}
+	}
+
+	private Node addToStart(Node nextNode, int digit)
+	{
+		Node newNode = new Node(null, digit, nextNode);
+		if (nextNode == null)
+		{
+			lastNode = newNode;
+		}
+		else
+		{
+			nextNode.previous = newNode;
+		}
+		firstNode = newNode;
+		numberOfDigits++;
+		return newNode;
+	}
+
+	private Node addToEnd(Node previousNode, int digit)
+	{
+		Node newNode = new Node(previousNode, digit, null);
+		if (previousNode == null)
+		{
+			firstNode = newNode;
+		}
+		else
+		{
+			previousNode.next = newNode;
+		}
+		lastNode = newNode;
+		numberOfDigits++;
+		return newNode;
 	}
 
 	/**
@@ -225,6 +234,13 @@ public class LInfiniteInteger implements InfiniteIntegerInterface
 		}
 	}
 
+	private LInfiniteInteger getAbsoluteValue()
+	{
+		LInfiniteInteger abs = new LInfiniteInteger(this.toString());
+		abs.isNegative = false;
+		return abs;
+	}
+
 	private LInfiniteInteger addAbsoluteValues(LInfiniteInteger otherInteger)
 	{
 		LInfiniteInteger sum = new LInfiniteInteger(0);
@@ -349,6 +365,56 @@ public class LInfiniteInteger implements InfiniteIntegerInterface
 	}
 	
 	/**
+	 * Calculates the result of this infinite integer multiplied by anInfiniteInteger
+	 * @param anInfiniteInteger the multiplier.
+	 * @return a NEW infinite integer representing the result of this
+	 * infinite integer multiplied by anInfiniteInteger.
+	 */
+	public InfiniteIntegerInterface multiply(final InfiniteIntegerInterface anInfiniteInteger)
+	{
+		LInfiniteInteger multiplier;
+		LInfiniteInteger multiplicand;
+		if (this.compareTo(anInfiniteInteger) == 1)
+		{
+			multiplicand = this;
+			multiplier = (LInfiniteInteger) anInfiniteInteger;
+		}
+		else
+		{
+			multiplicand = (LInfiniteInteger) anInfiniteInteger;
+			multiplier = this;
+		}
+		LInfiniteInteger[] multiplicandMultiples = new LInfiniteInteger[10];
+		multiplicandMultiples[0] = new LInfiniteInteger(0);
+		multiplicandMultiples[1] = new LInfiniteInteger(multiplicand.toString());
+		multiplicandMultiples[2] = (LInfiniteInteger) multiplicandMultiples[1].plus(multiplicandMultiples[1]);
+		multiplicandMultiples[3] = (LInfiniteInteger) multiplicandMultiples[2].plus(multiplicandMultiples[1]);
+		multiplicandMultiples[4] = (LInfiniteInteger) multiplicandMultiples[3].plus(multiplicandMultiples[1]);
+		multiplicandMultiples[5] = (LInfiniteInteger) multiplicandMultiples[4].plus(multiplicandMultiples[1]);
+		multiplicandMultiples[6] = (LInfiniteInteger) multiplicandMultiples[5].plus(multiplicandMultiples[1]);
+		multiplicandMultiples[7] = (LInfiniteInteger) multiplicandMultiples[6].plus(multiplicandMultiples[1]);
+		multiplicandMultiples[8] = (LInfiniteInteger) multiplicandMultiples[7].plus(multiplicandMultiples[1]);
+		multiplicandMultiples[9] = (LInfiniteInteger) multiplicandMultiples[8].plus(multiplicandMultiples[1]);
+		LInfiniteInteger[] partialProducts = new LInfiniteInteger[multiplier.numberOfDigits];
+		Node currentNode = multiplier.lastNode;
+		for (int i = 0; i < partialProducts.length; i++)
+		{
+			partialProducts[i] = multiplicandMultiples[currentNode.data];
+			for (int j = 0; j < i; j++)
+			{
+				partialProducts[i] = new LInfiniteInteger(partialProducts[i] + "0");
+			}
+			currentNode = currentNode.previous;
+		}
+		for (int i = 1; i < partialProducts.length; i++)
+		{
+			partialProducts[0] = (LInfiniteInteger) partialProducts[0].plus(partialProducts[i]);
+		}
+		LInfiniteInteger product = partialProducts[0];
+		return product;
+	}
+
+	/**
 	 * Generates a string representing this infinite integer. If this infinite integer
 	 * is a negative number a minus symbol should be in the front of numbers. For example,
 	 * "-12345678901234567890". But if the infinite integer is a positive number, no symbol
@@ -444,33 +510,6 @@ public class LInfiniteInteger implements InfiniteIntegerInterface
 			return 0;
 		}
 	}
-
-	/**
-	 * Calculates the result of this infinite integer multiplied by anInfiniteInteger
-	 * @param anInfiniteInteger the multiplier.
-	 * @return a NEW infinite integer representing the result of this
-	 * infinite integer multiplied by anInfiniteInteger.
-	 */
-	public InfiniteIntegerInterface multiply(final InfiniteIntegerInterface anInfiniteInteger)
-	{
-		// TO DO
-		return null;
-	}
-
-	/**
-	*Added methods from here.
-	*/
-
-	private LInfiniteInteger getAbsoluteValue()
-	{
-		LInfiniteInteger abs = new LInfiniteInteger(this.toString());
-		abs.isNegative = false;
-		return abs;
-	}
-
-	/**
-	*To here
-	*/
 	
 	private class Node
 	{
