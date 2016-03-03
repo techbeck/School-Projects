@@ -1,28 +1,72 @@
 	.data
 endT:	.word	120000
-q:	.space	1024
+q:	.space	512
 	.text
 	li	$v0, 30
 	syscall
 	move	$s1, $a0		# time step
 	move	$s3, $s1
-	la	$k0, q+4
-	la	$k1, q
+	la	$k0, q			# start
+	la	$k1, q			# end
 	li	$s0, 31			# initialize player at center x
 	move	$a0, $s0
 	li	$a1, 63
 	li	$a2, 2
 	jal	_setLED
 loop:
-	# TO DO keypress stuff
+	la	$v0, 0xffff0000		# address for reading key press status
+	lw	$t0, 0($v0)		# read the key press status
+	andi	$t0, $t0, 1
+	beq	$t0, $zero, endKey	# no key pressed
+	lw	$t0, 4($v0)		# read key value
+lkey:
+	li	$t1, 0xE2		# value for left key press
+	bne	$t0, $t1, rkey		# wasn't left key, so try right key
+	move	$a0, $s0
+	li	$a1, 63
+	li	$a2, 0
+	jal	_setLED
+	addi	$s0, $s0, -1
+	slt	$t0, $s0, $0
+	beq	$t0, $zero, noWrap
+	li	$s0, 63
+noWrap:
+	move	$a0, $s0
+	li	$a1, 63
+	li	$a2, 2
+	jal	_setLED
+	j	endKey
+rkey:
+	li	$t1, 0xE3		# check for right key press
+	bne	$t0, $t1, ukey		# wasn't right key, so check for up
+	move	$a0, $s0
+	li	$a1, 63
+	li	$a2, 0
+	jal	_setLED
+	addi	$s0, $s0, 1
+	andi	$s0, $s0, 0x3F
+	move	$a0, $s0
+	li	$a2, 2
+	jal	_setLED
+	j	endKey
+ukey:
+	li	$t1, 0xE0		# value for up key press
+	bne	$t0, $t1, ckey		# wasn't up key, so check for center
+	# TO DO
+	j	endKey
+ckey:
+	li	$t1, 0x42		# check for center key press
+	bne	$t0, $t1, endKey	# wasn't valid key
+	j	endGame
+endKey:
 	li	$v0, 30
 	syscall
 	move	$s2, $a0
 	sub	$t1, $s2, $s3
 	lw	$t2, endT
 	slt	$t1, $t1, $t2
-	beq	$t1, $zero, endGame	# ends game after time
-	
+	#beq	$t1, $zero, endGame	# ends game after time
+	# generates bug if random number [40,50]
 	sub	$t0, $s2, $s1
 	slti	$t0, $t0, 100
 	bne	$t0, $zero, loop	# only animate once every 100ms
@@ -31,14 +75,16 @@ loop:
 	li	$a0, 0
 	li	$a1, 100
 	syscall
-	slt	$t0, $a0, $v0
-	beq	$t0, $zero, noNewBug
-	slti	$t0, $a0, 38
+	slti	$t0, $a0, 40		# if $a0 < 40, $t0 = 1
+	bne	$t0, $zero, noNewBug
+	slti	$t0, $a0, 60		# if $a0 >= 50, $t0 = 0
 	beq	$t0, $zero, noNewBug
 	jal	_generateBug
-noNewBug:
+noNewBug:	
 	jal	_length_q
 	move	$s4, $v0		# length
+	slti	$t0, $s4, 1		# if length < 1, $t0 = 1
+	bne	$t0, $zero, exitAnimate
 animateLoop:
 	jal	_remove_q
 	lbu	$a0, 0($v0)		# x
@@ -90,13 +136,13 @@ _insert_q:
 	sb	$a2, 2($k0)
 	sb	$a3, 3($k0)
 	addi	$k0, $k0, 4
-	la	$t0, q+1024
+	la	$t0, q+512
 	slt	$t0, $k0, $t0
 	bne	$t0, $zero, exitInsert
 	la	$k0, q
 exitInsert:
 	jr	$ra
-
+ 
 	# int _remove_q()
 	# removes event from queue at end and moves end
 	# returns: $v0 = address of event info
@@ -104,7 +150,7 @@ exitInsert:
 _remove_q:
 	la	$v0, 0($k1)
 	addi	$k1, $k1, 4
-	la	$t0, q+1024
+	la	$t0, q+512
 	slt	$t0, $k1, $t0
 	bne	$t0, $zero, exitRemove
 	la	$k1, q
@@ -114,18 +160,15 @@ exitRemove:
 	# _length_q()
 	# returns number of events in queue
 	# returns: $v0 = number of events
-	# trashes: $t0, $t1
+	# trashes: $t0
 _length_q:
-	slt	$t0, $k0, $k1
-	beq	$t0, $zero, start_end
-	sub	$v0, $k0, $k1
-start_end:
 	sub	$v0, $k1, $k0
-	li	$t1, 1024
-	sub	$v0, $t1, $v0
+	slt	$t0, $v0, $zero
+	beq	$t0, $zero, lengthExit		# don't change sign if positive
+	sub	$v0, $zero, $v0
 lengthExit:
 	srl	$v0, $v0, 2
-	jr $ra
+	jr	$ra
 
 	# _generateBug()
 	# generates bug event and inserts into queue
