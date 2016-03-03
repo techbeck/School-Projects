@@ -1,46 +1,73 @@
 	.data
 initT:	.space	4
+q:	.space	512
 	.text
 	li	$v0, 30
 	syscall
-	move	$s0, $a0
-	sw	$s0, initT
-	li	$a0, 20
-	jal	bug
-exit:
-	li $v0, 10
-	syscall
-bug:				# $a0 = x value
-	move	$s3, $a0
+	sw	$a0, initT
+	la	$k0, q+4
+	la	$k0, q
+loop:
 	li	$v0, 30
 	syscall
-	move	$s0, $a0	# start time of bug
-	li	$s1, 0		# y start value of bug
-	move	$a0, $s3
-	move	$a1, $s1
+	lw	$t0, initT
+	sub	$t1, $a0, $t0
+	slti	$t1, $t1, 20000
+	beq	$t1, $zero, endGame
+	jal	generateBug
+innerLoop:
+	slti	$t0, $a1, 64
+	beq	$t0, $zero, loop
+	jal	bugEvent
+	j 	innerLoop
+endGame:
+	li	$v0, 10
+	syscall
+
+	# generateBug()
+	# generates bug event and inserts into queue
+	# $a0 = x, set to random [0,63]
+	# $a1 = y, set to 0
+	# $a2 = r, set to 0
+	# $a3 = type, set to b
+generateBug:
+	addi	$sp, $sp, -4
+	sw	$ra, 0($sp)
+	li	$v0, 42
+	li	$a0, 0
+	li	$a1, 64
+	syscall
+	move	$a0, $a0
+	li	$a1, 0
 	li	$a2, 3
 	jal	_setLED
-bugLoop:
-	li	$v0, 30
-	syscall
-	move	$s2, $a0
-	sub	$t0, $s2, $s0
-	li	$t1, 100
-	slt	$t0, $t1, $t0
-	beq	$t0, $zero, bugLoop
-	move	$a0, $s3
-	move	$a1, $s1
 	li	$a2, 0
+	li	$a3, 98
+	lw	$ra, 0($sp)
+	addi	$sp, $sp, 4
+	jr	$ra
+	
+
+
+	# bugEvent(x,y,0,b)
+	# processes bug event
+	# $a0 = x
+	# $a1 = y, if not killed, $a1 set to $a1 + 1
+	# $a2 = 0, no radius for bugs
+	# $a3 = b, if killed, $a3 set to k
+	# trashes: none
+bugEvent:
+	addi	$sp, $sp, -4
+	sw	$ra, 0($sp)
+	li	$a2, 0		# turn off LED
 	jal	_setLED
-	addi	$s1, $s1, 1
-	li	$a0, 20
-	move	$a1, $s1
-	li	$a2, 3
+	addi	$a1, $a1, 1
+	li	$a2, 3		# turn on LED
 	jal	_setLED
-	li	$v0, 30
-	syscall
-	move	$s0, $a0
-	j bugLoop
+	li	$a2, 0
+	lw	$ra, 0($sp)
+	addi	$sp, $sp, 4
+	jr	$ra
 
 	# void _setLED(int x, int y, int color)
 	#   sets the LED at (x,y) to color
