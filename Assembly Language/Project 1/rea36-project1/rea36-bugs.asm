@@ -1,14 +1,15 @@
 	.data
-initT:	.space	4
-q:	.space	512
+endT:	.word	120000
+q:	.space	1024
 	.text
 	li	$v0, 30
 	syscall
 	move	$s1, $a0		# time step
-	sw	$s1, initT
+	move	$s3, $s1
 	la	$k0, q+4
 	la	$k1, q
 	li	$s0, 31			# initialize player at center x
+	move	$a0, $s0
 	li	$a1, 63
 	li	$a2, 2
 	jal	_setLED
@@ -16,21 +17,59 @@ loop:
 	# TO DO keypress stuff
 	li	$v0, 30
 	syscall
-	move	$s2, $a0		# current time
-	lw	$t0, initT
-	sub	$t1, $s2, $t0
-	slti	$t1, $t1, 10000
+	move	$s2, $a0
+	sub	$t1, $s2, $s3
+	lw	$t2, endT
+	slt	$t1, $t1, $t2
 	beq	$t1, $zero, endGame	# ends game after time
+	
 	sub	$t0, $s2, $s1
 	slti	$t0, $t0, 100
-	bne	$t0, $zero, loop
+	bne	$t0, $zero, loop	# only animate once every 100ms
 	# TO DO different number generated depends on time
+	li	$v0, 42
+	li	$a0, 0
+	li	$a1, 100
+	syscall
+	slt	$t0, $a0, $v0
+	beq	$t0, $zero, noNewBug
+	slti	$t0, $a0, 38
+	beq	$t0, $zero, noNewBug
 	jal	_generateBug
-	
-	
+noNewBug:
+	jal	_length_q
+	move	$s4, $v0		# length
+animateLoop:
+	jal	_remove_q
+	lbu	$a0, 0($v0)		# x
+	lbu	$a1, 1($v0)		# y
+	lbu	$a2, 2($v0)		# r
+	lbu	$a3, 3($v0)		# type
+	li	$t0, 1
+	beq	$a3, $t0, bugEvent
+	li	$t0, 2
+	beq	$a3, $t0, phaserEvent
+	li	$t0, 3
+	beq	$a3, $t0, waveEvent
+	j	exitAnimate
+bugEvent:
+	jal	_processBug
+	j	continueAnimate
+phaserEvent:
+	jal	_processPhaser
+	j	continueAnimate
+waveEvent:
+	jal	_processWave
+continueAnimate:
+	jal	_insert_q
+	addi	$s4, $s4, -1
+	beq	$s4, $zero, exitAnimate	# exit after all events handled
+	j	animateLoop
+exitAnimate:
 	li	$v0, 30
 	syscall
 	move	$s1, $a0		# new time step
+	j	loop
 endGame:
 	li	$v0, 10
 	syscall
@@ -44,12 +83,14 @@ endGame:
 	# $a3 = type (k = 0, b = 1, p = 2, w = 3)
 	# trashes: $t0
 _insert_q:
+	li	$t0, 0
+	beq	$a3, $t0, exitInsert
 	sb	$a0, 0($k0)
 	sb	$a1, 1($k0)
 	sb	$a2, 2($k0)
 	sb	$a3, 3($k0)
 	addi	$k0, $k0, 4
-	la	$t0, q+512
+	la	$t0, q+1024
 	slt	$t0, $k0, $t0
 	bne	$t0, $zero, exitInsert
 	la	$k0, q
@@ -63,16 +104,28 @@ exitInsert:
 _remove_q:
 	la	$v0, 0($k1)
 	addi	$k1, $k1, 4
-	la	$t0, q+512
+	la	$t0, q+1024
 	slt	$t0, $k1, $t0
 	bne	$t0, $zero, exitRemove
 	la	$k1, q
 exitRemove:
 	jr	$ra
 	
-	# _length()
-	# returns length of queue
-	# $v0 = length
+	# _length_q()
+	# returns number of events in queue
+	# returns: $v0 = number of events
+	# trashes: $t0, $t1
+_length_q:
+	slt	$t0, $k0, $k1
+	beq	$t0, $zero, start_end
+	sub	$v0, $k0, $k1
+start_end:
+	sub	$v0, $k1, $k0
+	li	$t1, 1024
+	sub	$v0, $t1, $v0
+lengthExit:
+	srl	$v0, $v0, 2
+	jr $ra
 
 	# _generateBug()
 	# generates bug event and inserts into queue
@@ -99,7 +152,7 @@ _generateBug:
 	addi	$sp, $sp, 4
 	jr	$ra
 	
-	# _bugEvent(x,y,0,b)
+	# _processBug(x,y,0,b)
 	# processes bug event
 	# arguments:
 	# $a0 = x
@@ -107,7 +160,7 @@ _generateBug:
 	# $a2 = 0, no radius for bugs
 	# $a3 = 1, if killed, $a3 set to 0
 	# trashes: $t0
-_bugEvent:
+_processBug:
 	addi	$sp, $sp, -4
 	sw	$ra, 0($sp)
 	li	$a2, 0			# turn off LED
@@ -127,6 +180,16 @@ exitBug:
 	lw	$ra, 0($sp)
 	addi	$sp, $sp, 4
 	jr	$ra
+	
+	# _processPhaser(x,y,0,2)
+	#
+_processPhaser:
+	# TO DO
+	
+	# _processWave(x,y,r,3)
+	#
+_processWave:
+	# TO DO
 
 	# void _setLED(int x, int y, int color)
 	#   sets the LED at (x,y) to color
