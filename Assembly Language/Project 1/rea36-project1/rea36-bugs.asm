@@ -5,7 +5,7 @@ endT:	.word	120000
 	li	$v0, 30
 	syscall
 	move	$s1, $a0		# time step
-	move	$s3, $s1
+	move	$s3, $s1		# initial time (never changes)
 	la	$k0, q			# start
 	la	$k1, q			# end
 	li	$s0, 31			# initialize player at center x
@@ -56,7 +56,7 @@ ukey:
 	move	$a0, $s0		# create pulse event
 	li	$a1, 62
 	li	$a2, 0
-	li	$s3, 2
+	li	$a3, 2
 	jal	_insert_q		# insert pulse event into queue
 	j	endKey
 ckey:
@@ -74,20 +74,26 @@ endKey:
 	sub	$t0, $s2, $s1
 	slti	$t0, $t0, 100
 	bne	$t0, $zero, loop	# only animate once every 100ms
-	# TO DO different number generated depends on time
-	li	$v0, 42
+	li	$v0, 42			# generating bug(s)
 	li	$a0, 0
 	li	$a1, 100
 	syscall
-	slti	$t0, $a0, 40		# if $a0 < 40, $t0 = 1
-	bne	$t0, $zero, noNewBug
-	slti	$t0, $a0, 50		# if $a0 >= 50, $t0 = 0
-	beq	$t0, $zero, noNewBug
-	jal	_generateBug
-noNewBug:	
+	slti	$t0, $a0, 10
+	beq	$t0, $zero, noMoreBugs
+	li	$v0, 42
+	li	$a0, 0
+	li	$a1, 64
+	syscall				# get random number [0,63] for x
+	li	$a1, 0
+	li	$a2, 3
+	jal	_setLED
+	li	$a2, 0
+	li	$a3, 1
+	jal	_insert_q
+noMoreBugs:	
 	jal	_length_q
-	move	$s4, $v0		# length
-	slti	$t0, $s4, 1		# if length < 1, $t0 = 1
+	move	$s4, $v0		# # of events
+	slti	$t0, $s4, 1		# if # of events < 1, $t0 = 1
 	bne	$t0, $zero, exitAnimate
 animateLoop:
 	jal	_remove_q
@@ -95,6 +101,7 @@ animateLoop:
 	lbu	$a1, 1($v0)		# y
 	lbu	$a2, 2($v0)		# r
 	lbu	$a3, 3($v0)		# type
+	li	$t0, 1
 	beq	$a3, $t0, bugEvent
 	li	$t0, 2
 	beq	$a3, $t0, pulseEvent
@@ -138,13 +145,9 @@ _insert_q:
 	sb	$a2, 2($k0)
 	sb	$a3, 3($k0)
 	addi	$k0, $k0, 4
-	#la	$t0, q
-	#addi	$t0, $t0, 512
-	#and	$k0, $k0, $t0
-	la	$t0, q+512
-	slt	$t0, $k0, $t0
-	bne	$t0, $zero, exitInsert
-	la	$k0, q
+	la	$t0, q
+	addi	$t0, $t0, 511
+	and	$k0, $k0, $t0
 exitInsert:
 	jr	$ra
  
@@ -155,53 +158,27 @@ exitInsert:
 _remove_q:
 	la	$v0, 0($k1)
 	addi	$k1, $k1, 4
-	addi	$k1, $k1, 4
-	la	$t0, q+512
-	slt	$t0, $k1, $t0
-	bne	$t0, $zero, exitRemove
-	la	$k1, q
-	#la	$t0, q
-	#addi	$t0, $t0, 512
-	#and	$k1, $k1, $t0
+	la	$t0, q
+	addi	$t0, $t0, 511
+	and	$k1, $k1, $t0
 exitRemove:
 	jr	$ra
 	
 	# _length_q()
 	# returns number of events in queue
 	# returns: $v0 = number of events
-	# trashes: $t0
+	# trashes: $t0, $t1
 _length_q:
+	slt	$t0, $k0, $k1		# if $k0 >= $k1, $t0 = 0
+	bne	$t0, $zero, midWrap
+	sub	$v0, $k0, $k1
+	j	lengthExit
+midWrap:
 	sub	$v0, $k1, $k0
-	slt	$t0, $v0, $zero
-	beq	$t0, $zero, lengthExit		# don't change sign if positive
-	sub	$v0, $zero, $v0
+	li	$t1, 511
+	sub	$v0, $t1, $v0
 lengthExit:
-	srl	$v0, $v0, 2
-	jr	$ra
-
-	# _generateBug()
-	# generates bug event and inserts into queue
-	# arguments:
-	# $a0 = x, set to random [0,63]
-	# $a1 = y, set to 0
-	# $a2 = radius, set to 0
-	# $a3 = type, set to 1
-	# trashes: none
-_generateBug:
-	addi	$sp, $sp, -4
-	sw	$ra, 0($sp)
-	li	$v0, 42
-	li	$a0, 0
-	li	$a1, 64
-	syscall				# get random number [0,63] for x
-	li	$a1, 0
-	li	$a2, 3
-	jal	_setLED
-	li	$a2, 0
-	li	$a3, 1
-	jal	_insert_q
-	lw	$ra, 0($sp)
-	addi	$sp, $sp, 4
+	srl	$v0, $v0, 2		# divide by 4 for # events
 	jr	$ra
 	
 	# _processBug(x,y,0,b)
@@ -222,8 +199,6 @@ _processBug:
 	beq	$v0, $zero, bugNextSpot
 	li	$a3, 0
 	# TO DO search & turn pulse event into wave or ignore if yellow for player
-	li	$a2, 0			# turn off LED
-	jal	_setLED
 	j	exitBug
 bugNextSpot:
 	li	$a2, 3			# turn on LED
@@ -245,12 +220,18 @@ exitBug:
 	# $a1 = y, if no bug, $a1 = $a1 - 1
 	# $a2 = 0
 	# $a3 = 2, if bug, turns into wave event $a3 = 3
+	# trashes: $t0
 _processPulse:
 	addi	$sp, $sp, -4
 	sw	$ra, 0($sp)
 	li	$a2, 0			# turn off LED
 	jal	_setLED
 	addi	$a1, $a1, -1
+	slt	$t0, $zero, $a1
+	bne	$t0, $zero, notAtTop
+	li	$a3, 0
+	j	pulseExit
+notAtTop:
 	jal	_getLED
 	beq	$v0, $zero, pulseNextSpot
 	# TO DO search for bug event and kill it
