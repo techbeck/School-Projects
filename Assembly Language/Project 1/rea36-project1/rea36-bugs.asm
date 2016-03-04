@@ -1,6 +1,6 @@
 	.data
-endT:	.word	120000
 q:	.space	512
+endT:	.word	120000
 	.text
 	li	$v0, 30
 	syscall
@@ -25,16 +25,16 @@ lkey:
 	move	$a0, $s0
 	li	$a1, 63
 	li	$a2, 0
-	jal	_setLED
-	addi	$s0, $s0, -1
+	jal	_setLED			# turn off LED
+	addi	$s0, $s0, -1		# move one left
 	slt	$t0, $s0, $0
 	beq	$t0, $zero, noWrap
-	li	$s0, 63
+	li	$s0, 63			# wrap around
 noWrap:
 	move	$a0, $s0
 	li	$a1, 63
 	li	$a2, 2
-	jal	_setLED
+	jal	_setLED			# turn on LED
 	j	endKey
 rkey:
 	li	$t1, 0xE3		# check for right key press
@@ -42,17 +42,22 @@ rkey:
 	move	$a0, $s0
 	li	$a1, 63
 	li	$a2, 0
-	jal	_setLED
-	addi	$s0, $s0, 1
-	andi	$s0, $s0, 0x3F
+	jal	_setLED			# turn off LED
+	addi	$s0, $s0, 1		# move one right
+	andi	$s0, $s0, 0x3F		# wrap around
 	move	$a0, $s0
 	li	$a2, 2
-	jal	_setLED
+	jal	_setLED			# turn on LED
 	j	endKey
 ukey:
 	li	$t1, 0xE0		# value for up key press
 	bne	$t0, $t1, ckey		# wasn't up key, so check for center
-	# TO DO
+	# TO DO Don't create pulse if pulse already there
+	move	$a0, $s0		# create pulse event
+	li	$a1, 62
+	li	$a2, 0
+	li	$s3, 2
+	jal	_insert_q		# insert pulse event into queue
 	j	endKey
 ckey:
 	li	$t1, 0x42		# check for center key press
@@ -65,8 +70,7 @@ endKey:
 	sub	$t1, $s2, $s3
 	lw	$t2, endT
 	slt	$t1, $t1, $t2
-	#beq	$t1, $zero, endGame	# ends game after time
-	# generates bug if random number [40,50]
+	beq	$t1, $zero, endGame	# ends game after time
 	sub	$t0, $s2, $s1
 	slti	$t0, $t0, 100
 	bne	$t0, $zero, loop	# only animate once every 100ms
@@ -77,7 +81,7 @@ endKey:
 	syscall
 	slti	$t0, $a0, 40		# if $a0 < 40, $t0 = 1
 	bne	$t0, $zero, noNewBug
-	slti	$t0, $a0, 60		# if $a0 >= 50, $t0 = 0
+	slti	$t0, $a0, 50		# if $a0 >= 50, $t0 = 0
 	beq	$t0, $zero, noNewBug
 	jal	_generateBug
 noNewBug:	
@@ -91,18 +95,17 @@ animateLoop:
 	lbu	$a1, 1($v0)		# y
 	lbu	$a2, 2($v0)		# r
 	lbu	$a3, 3($v0)		# type
-	li	$t0, 1
 	beq	$a3, $t0, bugEvent
 	li	$t0, 2
-	beq	$a3, $t0, phaserEvent
+	beq	$a3, $t0, pulseEvent
 	li	$t0, 3
 	beq	$a3, $t0, waveEvent
 	j	exitAnimate
 bugEvent:
 	jal	_processBug
 	j	continueAnimate
-phaserEvent:
-	jal	_processPhaser
+pulseEvent:
+	jal	_processPulse
 	j	continueAnimate
 waveEvent:
 	jal	_processWave
@@ -129,13 +132,15 @@ endGame:
 	# $a3 = type (k = 0, b = 1, p = 2, w = 3)
 	# trashes: $t0
 _insert_q:
-	li	$t0, 0
-	beq	$a3, $t0, exitInsert
+	beq	$a3, $zero, exitInsert
 	sb	$a0, 0($k0)
 	sb	$a1, 1($k0)
 	sb	$a2, 2($k0)
 	sb	$a3, 3($k0)
 	addi	$k0, $k0, 4
+	#la	$t0, q
+	#addi	$t0, $t0, 512
+	#and	$k0, $k0, $t0
 	la	$t0, q+512
 	slt	$t0, $k0, $t0
 	bne	$t0, $zero, exitInsert
@@ -150,10 +155,14 @@ exitInsert:
 _remove_q:
 	la	$v0, 0($k1)
 	addi	$k1, $k1, 4
+	addi	$k1, $k1, 4
 	la	$t0, q+512
 	slt	$t0, $k1, $t0
 	bne	$t0, $zero, exitRemove
 	la	$k1, q
+	#la	$t0, q
+	#addi	$t0, $t0, 512
+	#and	$k1, $k1, $t0
 exitRemove:
 	jr	$ra
 	
@@ -211,28 +220,72 @@ _processBug:
 	addi	$a1, $a1, 1
 	jal	_getLED
 	beq	$v0, $zero, bugNextSpot
-	li	$a3, 3
+	li	$a3, 0
+	# TO DO search & turn pulse event into wave or ignore if yellow for player
+	li	$a2, 0			# turn off LED
+	jal	_setLED
+	j	exitBug
 bugNextSpot:
 	li	$a2, 3			# turn on LED
 	jal	_setLED
 	slti	$t0, $a1, 64
 	bne	$t0, $zero, exitBug
 	li	$a3, 0			# kills bug if past screen
+	li	$a2, 0			# turn off LED
+	jal	_setLED
 exitBug:
 	li	$a2, 0
 	lw	$ra, 0($sp)
 	addi	$sp, $sp, 4
 	jr	$ra
 	
-	# _processPhaser(x,y,0,2)
-	#
-_processPhaser:
-	# TO DO
+	# _processPulse(x,y,0,2)
+	# processes phaser event
+	# $a0 = x
+	# $a1 = y, if no bug, $a1 = $a1 - 1
+	# $a2 = 0
+	# $a3 = 2, if bug, turns into wave event $a3 = 3
+_processPulse:
+	addi	$sp, $sp, -4
+	sw	$ra, 0($sp)
+	li	$a2, 0			# turn off LED
+	jal	_setLED
+	addi	$a1, $a1, -1
+	jal	_getLED
+	beq	$v0, $zero, pulseNextSpot
+	# TO DO search for bug event and kill it
+	li	$a3, 3
+	li	$a2, 1			# turn on LED for wave
+	jal	_setLED
+	j	pulseExit
+pulseNextSpot:
+	li	$a2, 1			# turn on LED
+	jal	_setLED
+	slti	$t0, $a1, 64
+	bne	$t0, $zero, exitBug
+	li	$a3, 0			# kills bug if past screen
+	li	$a2, 0			# turn off LED
+	jal	_setLED
+pulseExit:
+	li	$a2, 0
+	lw	$ra, 0($sp)
+	addi	$sp, $sp, 4
+	jr	$ra
 	
 	# _processWave(x,y,r,3)
-	#
+	# process wave event
+	# $a0 = x (center)
+	# $a1 = y (center)
+	# $a2 = radius, if no bug, $a2 = $a2 + 1
+	# $a3 = 3
 _processWave:
 	# TO DO
+	addi	$sp, $sp, -4
+	sw	$ra, 0($sp)
+	
+	
+	lw	$ra, 0($sp)
+	addi	$sp, $sp, 4
 
 	# void _setLED(int x, int y, int color)
 	#   sets the LED at (x,y) to color
