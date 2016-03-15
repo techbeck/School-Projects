@@ -41,18 +41,21 @@ public class LInfiniteInteger implements InfiniteIntegerInterface
 			lastNode = firstNode;
 			numberOfDigits = 1;
 		}
-		numberOfDigits = 0;
-		if (anInteger < 0)
+		else
 		{
-			isNegative = true;
-			anInteger = anInteger + (-2*anInteger);
-		}
-		Node nextNode = null;
-		while (anInteger > 0)
-		{
-			int digit = anInteger % 10;
-			anInteger = anInteger / 10;
-			nextNode = addToStart(nextNode, digit);
+			numberOfDigits = 0;
+			if (anInteger < 0)
+			{
+				isNegative = true;
+				anInteger = anInteger + (-2*anInteger);
+			}
+			Node nextNode = null;
+			while (anInteger > 0)
+			{
+				int digit = anInteger % 10;
+				anInteger = anInteger / 10;
+				nextNode = addToStart(nextNode, digit);
+			}
 		}
 	}
 
@@ -278,67 +281,68 @@ public class LInfiniteInteger implements InfiniteIntegerInterface
 		{
 			sum.addToStart(sumNextNode, carryOut);
 		}
+		sum.numberOfDigits--;
 		return sum;
 	}
 
 	private LInfiniteInteger subtractAbsoluteValues(LInfiniteInteger otherInteger)
 	{
 		LInfiniteInteger diff = new LInfiniteInteger(0);
-				int carryIn = 0;
-				int partialDiff = 0;
-				int currentInt = 0;
-				Node thisCurrentNode = this.lastNode;
-				Node otherCurrentNode = otherInteger.lastNode;
-				Node diffCurrentNode = diff.lastNode;
-				Node diffNextNode = null;
-				while (thisCurrentNode != null && otherCurrentNode != null)
-				{
-					currentInt = thisCurrentNode.data - carryIn;
-					if ((currentInt - otherCurrentNode.data) < 0)
-					{
-						carryIn = 1;
-						currentInt = currentInt + 10;
-					}
-					else
-					{
-						carryIn = 0;
-					}
-					partialDiff = currentInt - otherCurrentNode.data;
-					diffCurrentNode = new Node(null, partialDiff, diffNextNode);
-					if (diffNextNode == null)
-					{
-						diff.lastNode = diffCurrentNode;
-					}
-					else
-					{
-						diffNextNode.previous = diffCurrentNode;
-					}
-					diff.firstNode = diffCurrentNode;
-					diffNextNode = diffCurrentNode;
-					diff.numberOfDigits = diff.numberOfDigits + 1;
-					thisCurrentNode = thisCurrentNode.previous;
-					otherCurrentNode = otherCurrentNode.previous;
-				}
-				while (thisCurrentNode != null)
-				{
-					currentInt = thisCurrentNode.data - carryIn;
-					if (currentInt < 0)
-					{
-						carryIn = 1;
-						currentInt = currentInt + 10;
-					}
-					else
-					{
-						carryIn = 0;
-					}
-					diffCurrentNode = new Node(null, currentInt, diffNextNode);
-					diffNextNode.previous = diffCurrentNode;
-					diff.firstNode = diffCurrentNode;
-					diffNextNode = diffCurrentNode;
-					diff.numberOfDigits = diff.numberOfDigits + 1;
-					thisCurrentNode = thisCurrentNode.previous;
-				}
-				return diff;
+		int carryIn = 0;
+		int partialDiff = 0;
+		int currentInt = 0;
+		Node thisCurrentNode = this.lastNode;
+		Node otherCurrentNode = otherInteger.lastNode;
+		Node diffCurrentNode = diff.lastNode;
+		Node diffNextNode = null;
+		while (thisCurrentNode != null && otherCurrentNode != null)
+		{
+			currentInt = thisCurrentNode.data - carryIn;
+			if ((currentInt - otherCurrentNode.data) < 0)
+			{
+				carryIn = 1;
+				currentInt = currentInt + 10;
+			}
+			else
+			{
+				carryIn = 0;
+			}
+			partialDiff = currentInt - otherCurrentNode.data;
+			diffCurrentNode = new Node(null, partialDiff, diffNextNode);
+			if (diffNextNode == null)
+			{
+				diff.lastNode = diffCurrentNode;
+			}
+			else
+			{
+				diffNextNode.previous = diffCurrentNode;
+			}
+			diff.firstNode = diffCurrentNode;
+			diffNextNode = diffCurrentNode;
+			diff.numberOfDigits = diff.numberOfDigits + 1;
+			thisCurrentNode = thisCurrentNode.previous;
+			otherCurrentNode = otherCurrentNode.previous;
+		}
+		while (thisCurrentNode != null)
+		{
+			currentInt = thisCurrentNode.data - carryIn;
+			if (currentInt < 0)
+			{
+				carryIn = 1;
+				currentInt = currentInt + 10;
+			}
+			else
+			{
+				carryIn = 0;
+			}
+			diffCurrentNode = new Node(null, currentInt, diffNextNode);
+			diffNextNode.previous = diffCurrentNode;
+			diff.firstNode = diffCurrentNode;
+			diffNextNode = diffCurrentNode;
+			diff.numberOfDigits = diff.numberOfDigits + 1;
+			thisCurrentNode = thisCurrentNode.previous;
+		}
+		return diff;
 	}
 	
 	/**
@@ -349,17 +353,27 @@ public class LInfiniteInteger implements InfiniteIntegerInterface
 	 */
 	public InfiniteIntegerInterface multiply(final InfiniteIntegerInterface anInfiniteInteger)
 	{
+		boolean makeFalse = false;
+		LInfiniteInteger otherInteger = (LInfiniteInteger) anInfiniteInteger;
+		if (this.isNegative() && otherInteger.isNegative() == false)
+		{
+			makeFalse = true;
+		}
+		else if (this.isNegative() == false && otherInteger.isNegative())
+		{
+			makeFalse = true;
+		}
 		LInfiniteInteger multiplier;
 		LInfiniteInteger multiplicand;
 		if (this.compareTo(anInfiniteInteger) == 1)
 		{
-			multiplicand = this;
-			multiplier = (LInfiniteInteger) anInfiniteInteger;
+			multiplicand = otherInteger.getAbsoluteValue();
+			multiplier = this.getAbsoluteValue();
 		}
 		else
 		{
-			multiplicand = (LInfiniteInteger) anInfiniteInteger;
-			multiplier = this;
+			multiplicand = this.getAbsoluteValue();
+			multiplier = otherInteger.getAbsoluteValue();
 		}
 		LInfiniteInteger[] multiplicandMultiples = new LInfiniteInteger[10];
 		multiplicandMultiples[0] = new LInfiniteInteger(0);
@@ -388,6 +402,14 @@ public class LInfiniteInteger implements InfiniteIntegerInterface
 			partialProducts[0] = (LInfiniteInteger) partialProducts[0].plus(partialProducts[i]);
 		}
 		LInfiniteInteger product = partialProducts[0];
+		if (product.compareTo(multiplicandMultiples[0]) == 0)
+		{
+			return product.getAbsoluteValue();
+		}
+		if (makeFalse)
+		{
+			product.isNegative = true;
+		}
 		return product;
 	}
 
