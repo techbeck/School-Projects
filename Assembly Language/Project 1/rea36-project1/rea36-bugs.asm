@@ -2,7 +2,15 @@
 q:	.space	512
 endT:	.word	120000
 	.text
-	li	$v0, 30
+preGame:
+	la	$v0, 0xffff0000		# address for reading key press status
+	lw	$t0, 0($v0)		# read the key press status
+	andi	$t0, $t0, 1
+	beq	$t0, $zero, preGame	# no key pressed
+	lw	$t0, 4($v0)		# read key value
+	li	$t1, 0x42		# check for center key press
+	bne	$t0, $t1, preGame	# wasn't center key
+	li	$v0, 30			# start game
 	syscall
 	move	$s1, $a0		# time step
 	move	$s3, $s1		# initial time (never changes)
@@ -17,11 +25,11 @@ loop:
 	la	$v0, 0xffff0000		# address for reading key press status
 	lw	$t0, 0($v0)		# read the key press status
 	andi	$t0, $t0, 1
-	beq	$t0, $zero, endKey	# no key pressed
+	beq	$t0, $zero, endKeyCheck	# no key pressed
 	lw	$t0, 4($v0)		# read key value
-lkey:
+leftKey:
 	li	$t1, 0xE2		# value for left key press
-	bne	$t0, $t1, rkey		# wasn't left key, so try right key
+	bne	$t0, $t1, rightKey		# wasn't left key, so try right key
 	move	$a0, $s0
 	li	$a1, 63
 	li	$a2, 0
@@ -35,10 +43,10 @@ noWrap:
 	li	$a1, 63
 	li	$a2, 2
 	jal	_setLED			# turn on LED
-	j	endKey
-rkey:
+	j	endKeyCheck
+rightKey:
 	li	$t1, 0xE3		# check for right key press
-	bne	$t0, $t1, ukey		# wasn't right key, so check for up
+	bne	$t0, $t1, upKey		# wasn't right key, so check for up
 	move	$a0, $s0
 	li	$a1, 63
 	li	$a2, 0
@@ -48,22 +56,22 @@ rkey:
 	move	$a0, $s0
 	li	$a2, 2
 	jal	_setLED			# turn on LED
-	j	endKey
-ukey:
+	j	endKeyCheck
+upKey:
 	li	$t1, 0xE0		# value for up key press
-	bne	$t0, $t1, ckey		# wasn't up key, so check for center
+	bne	$t0, $t1, downKey		# wasn't up key, so check for center
 	# TO DO Don't create pulse if pulse already there
 	move	$a0, $s0		# create pulse event
 	li	$a1, 62
 	li	$a2, 0
 	li	$a3, 2
 	jal	_insert_q		# insert pulse event into queue
-	j	endKey
-ckey:
-	li	$t1, 0x42		# check for center key press
-	bne	$t0, $t1, endKey	# wasn't valid key
+	j	endKeyCheck
+downKey:
+	li	$t1, 0xE1		# check for center key press
+	bne	$t0, $t1, endKeyCheck	# wasn't valid key
 	j	endGame
-endKey:
+endKeyCheck:
 	li	$v0, 30
 	syscall
 	move	$s2, $a0
@@ -74,23 +82,8 @@ endKey:
 	sub	$t0, $s2, $s1
 	slti	$t0, $t0, 100
 	bne	$t0, $zero, loop	# only animate once every 100ms
-	li	$v0, 42			# generating bug(s)
-	li	$a0, 0
-	li	$a1, 100
-	syscall
-	slti	$t0, $a0, 10
-	beq	$t0, $zero, noMoreBugs
-	li	$v0, 42
-	li	$a0, 0
-	li	$a1, 64
-	syscall				# get random number [0,63] for x
-	li	$a1, 0
-	li	$a2, 3
-	jal	_setLED
-	li	$a2, 0
-	li	$a3, 1
-	jal	_insert_q
-noMoreBugs:	
+	addi	$s7, $s7, 1		# counter
+	jal	_generateBugs
 	jal	_length_q
 	move	$s4, $v0		# # of events
 	slti	$t0, $s4, 1		# if # of events < 1, $t0 = 1
@@ -122,6 +115,10 @@ continueAnimate:
 	beq	$s4, $zero, exitAnimate	# exit after all events handled
 	j	animateLoop
 exitAnimate:
+	move	$a0, $s0
+	li	$a1, 63
+	li	$a2, 2
+	jal	_setLED			# turn on shooter LED in case it got hit
 	li	$v0, 30
 	syscall
 	move	$s1, $a0		# new time step
@@ -181,6 +178,60 @@ lengthExit:
 	srl	$v0, $v0, 2		# divide by 4 for # events
 	jr	$ra
 	
+	# _generateBugs()
+	# generates 3 bugs at x,0
+	# where x is between 0 and 63
+	# trashes: $t0-$t3
+_generateBugs:
+	addi	$sp, $sp, -4
+	sw	$ra, 0($sp)
+	slti	$t0, $s7, 300
+	beq	$t0, $zero, time1
+	li	$t9, 1				# bugs to generate
+	li	$t0, 20
+	div	$s7, $t0
+	j	contBugs
+time1:
+	slti	$t0, $s7, 600
+	beq	$t0, $zero, time2
+	li	$t9, 2				# bugs to generate
+	li	$t0, 15
+	div	$s7, $t0
+	j	contBugs
+time2:
+	slti	$t0, $s7, 1200
+	beq	$t0, $zero, time3
+	li	$t9, 3				# bugs to generate
+	li	$t0, 10
+	div	$s7, $t0
+	j	contBugs
+time3:
+	li	$t9, 4				# bugs to generate
+	li	$t0, 5
+	div	$s7, $t0
+contBugs:
+	mfhi	$t1
+	bne	$t1, $zero, exitGenBugs
+genBugsLoop:
+	slt	$t0, $zero, $t9
+	beq	$t0, $zero, exitGenBugs
+	addi	$t9, $t9, -1
+	li	$v0, 42
+	li	$a0, 0
+	li	$a1, 64
+	syscall				# get random number [0,63] for x
+	li	$a1, 0
+	li	$a2, 3
+	jal	_setLED
+	li	$a2, 0
+	li	$a3, 1
+	jal	_insert_q
+	j	genBugsLoop
+exitGenBugs:
+	lw	$ra, 0($sp)
+	addi	$sp, $sp, 4
+	jr	$ra
+
 	# _processBug(x,y,0,b)
 	# processes bug event
 	# arguments:
@@ -198,7 +249,7 @@ _processBug:
 	jal	_getLED
 	beq	$v0, $zero, bugNextSpot
 	li	$a3, 0
-	# TO DO search & turn pulse event into wave or ignore if yellow for player
+	# TO DO search & turn pulse event into wave
 	j	exitBug
 bugNextSpot:
 	li	$a2, 3			# turn on LED
