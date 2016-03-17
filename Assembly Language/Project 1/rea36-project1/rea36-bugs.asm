@@ -1,6 +1,11 @@
+# Rebecca Addison
+# rea36@pitt.edu
 	.data
 q:	.space	512
 endT:	.word	120000
+msg1:	.asciiz	"The game score is "
+msg2:	.asciiz " : "
+msg3:	.asciiz	"."
 	.text
 preGame:
 	la	$v0, 0xffff0000		# address for reading key press status
@@ -29,7 +34,7 @@ loop:
 	lw	$t0, 4($v0)		# read key value
 leftKey:
 	li	$t1, 0xE2		# value for left key press
-	bne	$t0, $t1, rightKey		# wasn't left key, so try right key
+	bne	$t0, $t1, rightKey	# wasn't left key, so try right key
 	move	$a0, $s0
 	li	$a1, 63
 	li	$a2, 0
@@ -59,18 +64,22 @@ rightKey:
 	j	endKeyCheck
 upKey:
 	li	$t1, 0xE0		# value for up key press
-	bne	$t0, $t1, downKey		# wasn't up key, so check for center
-	# TO DO Don't create pulse if pulse already there
+	bne	$t0, $t1, downKey	# wasn't up key, so check for center
+	# TO DO: Don't create pulse if pulse already there
+	addi	$s5, $s5, 1
 	move	$a0, $s0		# create pulse event
 	li	$a1, 62
+	li	$a2, 1
+	jal	_setLED
 	li	$a2, 0
 	li	$a3, 2
 	jal	_insert_q		# insert pulse event into queue
 	j	endKeyCheck
 downKey:
-	li	$t1, 0xE1		# check for center key press
-	bne	$t0, $t1, endKeyCheck	# wasn't valid key
-	j	endGame
+	li	$t1, 0xE1		# check for down key press
+	beq	$t0, $t1, endGame
+	li	$t1, 0x42		# check for center key press
+	beq	$t0, $t1, endGame
 endKeyCheck:
 	li	$v0, 30
 	syscall
@@ -124,6 +133,21 @@ exitAnimate:
 	move	$s1, $a0		# new time step
 	j	loop
 endGame:
+	la	$a0, msg1
+	li	$v0, 4
+	syscall
+	move	$a0, $s6
+	li	$v0, 1
+	syscall
+	la	$a0, msg2
+	li	$v0, 4
+	syscall
+	move	$a0, $s5
+	li	$v0, 1
+	syscall
+	la	$a0, msg3
+	li	$v0, 4
+	syscall
 	li	$v0, 10
 	syscall
 
@@ -178,6 +202,59 @@ lengthExit:
 	srl	$v0, $v0, 2		# divide by 4 for # events
 	jr	$ra
 	
+	# _searchForBug(x,y)
+	# finds and kills matching bug in queue
+	# arguments: $a0 = x, $a1 = y
+	# trashes: $t0-$t2
+_searchForBug:
+	la	$t0, q
+	addi	$t1, $t0, 511
+bugSearchLoop:
+	beq	$t0, $t1, exitBugSearch
+	addi	$t0, $t0, 4
+	lbu	$t2, -4($t0)
+	bne	$t2, $a0, bugSearchLoop
+	lbu	$t2, -3($t0)
+	bne	$t2, $a1, bugSearchLoop
+	sb	$zero, -1($t0)
+exitBugSearch:
+	jr	$ra
+	
+	# _searchForPulse(x,y)
+	# finds and turns pulse into wave
+	# arguments: $a0 = x, $a1 = y
+	# trashes: $t0-$t2
+_searchForPulse:
+	slt	$t0, $k1, $k0
+	beq	$t0, $zero, pulseSearch2
+	move	$t0, $k1
+pulseSearchLoop:
+	beq	$k0, $t0, exitPulseSearch
+	addi	$t0, $t0, 4
+	lbu	$t2, -4($t0)
+	bne	$t2, $a0, pulseSearchLoop
+	lbu	$t2, -3($t0)
+	bne	$t2, $a1, pulseSearchLoop
+	li	$t1, 3
+	sb	$t1, -1($t0)
+	j	exitPulseSearch
+pulseSearch2:					# end > start, mid wrap
+	la	$t0, q
+	addi	$t1, $t0, 511
+	move	$t0, $k0
+pulseSearchLoop2:
+	and	$t0, $t0, $t1
+	beq	$k1, $t0, exitPulseSearch
+	addi	$t0, $t0, 4
+	lbu	$t2, -4($t0)
+	bne	$t2, $a0, pulseSearchLoop2
+	lbu	$t2, -3($t0)
+	bne	$t2, $a1, pulseSearchLoop2
+	li	$t1, 3
+	sb	$t1, -1($t0)
+exitPulseSearch:
+	jr	$ra
+	
 	# _generateBugs()
 	# generates 3 bugs at x,0
 	# where x is between 0 and 63
@@ -185,13 +262,6 @@ lengthExit:
 _generateBugs:
 	addi	$sp, $sp, -4
 	sw	$ra, 0($sp)
-	slti	$t0, $s7, 300
-	beq	$t0, $zero, time1
-	li	$t9, 1				# bugs to generate
-	li	$t0, 20
-	div	$s7, $t0
-	j	contBugs
-time1:
 	slti	$t0, $s7, 600
 	beq	$t0, $zero, time2
 	li	$t9, 2				# bugs to generate
@@ -219,7 +289,7 @@ genBugsLoop:
 	li	$v0, 42
 	li	$a0, 0
 	li	$a1, 64
-	syscall				# get random number [0,63] for x
+	syscall					# get random number [0,63] for x
 	li	$a1, 0
 	li	$a2, 3
 	jal	_setLED
@@ -248,15 +318,18 @@ _processBug:
 	addi	$a1, $a1, 1
 	jal	_getLED
 	beq	$v0, $zero, bugNextSpot
+	li	$t0, 2
+	beq	$v0, $t0, exitBug
+	addi	$s6, $s6, 1
 	li	$a3, 0
-	# TO DO search & turn pulse event into wave
+	jal	_searchForPulse
 	j	exitBug
 bugNextSpot:
 	li	$a2, 3			# turn on LED
 	jal	_setLED
-	slti	$t0, $a1, 64
+	slti	$t0, $a1, 63
 	bne	$t0, $zero, exitBug
-	li	$a3, 0			# kills bug if past screen
+	li	$a3, 0			# kills bug in shooter row
 	li	$a2, 0			# turn off LED
 	jal	_setLED
 exitBug:
@@ -285,7 +358,8 @@ _processPulse:
 notAtTop:
 	jal	_getLED
 	beq	$v0, $zero, pulseNextSpot
-	# TO DO search for bug event and kill it
+	addi	$s6, $s6, 1
+	jal	_searchForBug
 	li	$a3, 3
 	li	$a2, 1			# turn on LED for wave
 	jal	_setLED
@@ -309,15 +383,104 @@ pulseExit:
 	# $a0 = x (center)
 	# $a1 = y (center)
 	# $a2 = radius, if no bug, $a2 = $a2 + 1
-	# $a3 = 3
+	# $a3 = 3, if radius = 10, kill wave, $a3 = 0
+	# trashes: $t0-$t6
 _processWave:
-	# TO DO
 	addi	$sp, $sp, -4
 	sw	$ra, 0($sp)
-	
-	
+	move	$t4, $a0				# base x value of wave
+	move	$t5, $a1				# base y value of wave
+	move	$t6, $a2				# radius of wave
+	add	$a1, $t5, $t6
+	li	$a2, 0
+	jal	_setLED					# turn off x,y+r
+	sub	$a1, $t5, $t6
+	slt	$t0, $a1, $zero
+	bne	$t0, $zero, skip1			# skip if off screen
+	jal	_setLED					# turn off x,y-r
+skip1:
+	add	$a0, $t4, $t6
+	move	$a1, $t5
+	jal	_setLED					# turn off x+r,y
+	sub	$a0, $t4, $t6
+	slt	$t0, $a0, $zero
+	bne	$t0, $zero, skip2			# skip if off screen
+	jal	_setLED					# turn off x-r,y
+skip2:
+	add	$a0, $t4, $t6
+	add	$a1, $t5, $t6
+	jal	_setLED					# turn off x+r,y+r
+	sub	$a1, $t5, $t6
+	slt	$t0, $a1, $zero
+	bne	$t0, $zero, skip3			# skip if off screen
+	jal	_setLED					# turn off x+r,y-r
+skip3:
+	sub	$a0, $t4, $t6
+	add	$a1, $t5, $t6
+	slt	$t0, $a0, $zero
+	bne	$t0, $zero, skip4			# skip if off screen
+	jal	_setLED					# turn off x-r,y+r
+skip4:
+	sub	$a1, $t5, $t6
+	slt	$t0, $a0, $zero
+	bne	$t0, $zero, skip5
+	slt	$t0, $a1, $zero
+	bne	$t0, $zero, skip5			# skip if off screen
+	jal	_setLED					# turn off x-r,y-r
+skip5:
+	li	$t0, 10
+	bne	$t6, $t0, continueWave
+	li	$a3, 0					# if radius = 10, kill wave
+	j	exitWave
+continueWave:
+	addi	$t6, $t6, 1
+	# TO DO: cascade waves
+waveNextSpot:
+	move	$a0, $t4
+	li	$a2, 1
+	add	$a1, $t5, $t6
+	jal	_setLED					# turn on x,y+r
+	sub	$a1, $t5, $t6
+	slt	$t0, $a1, $zero
+	bne	$t0, $zero, skip6			# skip if off screen
+	jal	_setLED					# turn on x,y-r
+skip6:
+	add	$a0, $t4, $t6
+	move	$a1, $t5
+	jal	_setLED					# turn on x+r,y
+	sub	$a0, $t4, $t6
+	slt	$t0, $a0, $zero
+	bne	$t0, $zero, skip7			# skip if off screen
+	jal	_setLED					# turn on x-r,y
+skip7:
+	add	$a0, $t4, $t6
+	add	$a1, $t5, $t6
+	jal	_setLED					# turn on x+r,y+r
+	sub	$a1, $t5, $t6
+	slt	$t0, $a1, $zero
+	bne	$t0, $zero, skip8			# skip if off screen
+	jal	_setLED					# turn on x+r,y-r
+skip8:
+	sub	$a0, $t4, $t6
+	add	$a1, $t5, $t6
+	slt	$t0, $a0, $zero
+	bne	$t0, $zero, skip9			# skip if off screen
+	jal	_setLED					# turn on x-r,y+r
+skip9:
+	sub	$a1, $t5, $t6
+	slt	$t0, $a0, $zero
+	bne	$t0, $zero, skip10
+	slt	$t0, $a1, $zero
+	bne	$t0, $zero, skip10			# skip if off screen
+	jal	_setLED					# turn on x-r,y-r
+skip10:
+	move	$a0, $t4
+	move	$a1, $t5
+	move	$a2, $t6
+exitWave:
 	lw	$ra, 0($sp)
 	addi	$sp, $sp, 4
+	jr	$ra
 
 	# void _setLED(int x, int y, int color)
 	#   sets the LED at (x,y) to color
