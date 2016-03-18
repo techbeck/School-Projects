@@ -207,21 +207,38 @@ lengthExit:
 	# arguments: $a0 = x, $a1 = y
 	# trashes: $t0-$t2
 _searchForBug:
-	la	$t0, q
-	addi	$t1, $t0, 511
+	slt	$t0, $k1, $k0
+	beq	$t0, $zero, bugSearch2
+	move	$t0, $k1
 bugSearchLoop:
-	beq	$t0, $t1, exitBugSearch
+	beq	$k0, $t0, exitBugSearch
 	addi	$t0, $t0, 4
 	lbu	$t2, -4($t0)
 	bne	$t2, $a0, bugSearchLoop
 	lbu	$t2, -3($t0)
 	bne	$t2, $a1, bugSearchLoop
-	sb	$zero, -1($t0)
+	li	$t1, 0				# kill bug
+	sb	$t1, -1($t0)
+	j	exitBugSearch
+bugSearch2:					# end > start, mid wrap
+	la	$t0, q
+	addi	$t1, $t0, 511
+	move	$t0, $k0
+bugSearchLoop2:
+	and	$t0, $t0, $t1
+	beq	$k1, $t0, exitBugSearch
+	addi	$t0, $t0, 4
+	lbu	$t2, -4($t0)
+	bne	$t2, $a0, bugSearchLoop2
+	lbu	$t2, -3($t0)
+	bne	$t2, $a1, bugSearchLoop2
+	li	$t1, 3
+	sb	$t1, -1($t0)
 exitBugSearch:
 	jr	$ra
 	
 	# _searchForPulse(x,y)
-	# finds and turns pulse into wave
+	# finds and turns matching pulse into wave
 	# arguments: $a0 = x, $a1 = y
 	# trashes: $t0-$t2
 _searchForPulse:
@@ -235,7 +252,7 @@ pulseSearchLoop:
 	bne	$t2, $a0, pulseSearchLoop
 	lbu	$t2, -3($t0)
 	bne	$t2, $a1, pulseSearchLoop
-	li	$t1, 3
+	li	$t1, 3				# turns into wave
 	sb	$t1, -1($t0)
 	j	exitPulseSearch
 pulseSearch2:					# end > start, mid wrap
@@ -384,7 +401,7 @@ pulseExit:
 	# $a1 = y (center)
 	# $a2 = radius, if no bug, $a2 = $a2 + 1
 	# $a3 = 3, if radius = 10, kill wave, $a3 = 0
-	# trashes: $t0-$t6
+	# trashes: $t0-$t8
 _processWave:
 	addi	$sp, $sp, -4
 	sw	$ra, 0($sp)
@@ -433,8 +450,184 @@ skip5:
 	li	$a3, 0					# if radius = 10, kill wave
 	j	exitWave
 continueWave:
-	addi	$t6, $t6, 1
-	# TO DO: cascade waves
+	addi	$t6, $t6, 1				# check for bug at next position
+	li	$t8, 3
+	move	$a0, $t4
+	add	$a1, $t5, $t6
+	jal	_getLED					# check x,y+r
+	bne	$v0, $t8, noBug1
+	jal	_searchForBug
+	addi	$s6, $s6, 1
+	li	$a2, 0
+	li	$a3, 3
+	j	exitWave
+noBug1:
+	sub	$a1, $t5, $t6
+	slt	$t0, $a1, $zero
+	bne	$t0, $zero, skip6			# skip if off screen
+	jal	_getLED					# check x,y-r
+	bne	$v0, $t8, skip6
+	jal	_searchForBug
+	addi	$s6, $s6, 1
+	li	$a2, 0
+	li	$a3, 3
+	j	exitWave
+skip6:
+	add	$a0, $t4, $t6
+	move	$a1, $t5
+	jal	_getLED					# check x+r,y
+	bne	$v0, $t8, noBug2
+	jal	_searchForBug
+	addi	$s6, $s6, 1
+	li	$a2, 0
+	li	$a3, 3
+	j	exitWave
+noBug2:
+	sub	$a0, $t4, $t6
+	slt	$t0, $a0, $zero
+	bne	$t0, $zero, skip7			# skip if off screen
+	jal	_getLED					# check x-r,y
+	bne	$v0, $t8, skip7
+	jal	_searchForBug
+	addi	$s6, $s6, 1
+	li	$a2, 0
+	li	$a3, 3
+	j	exitWave
+skip7:
+	add	$a0, $t4, $t6
+	add	$a1, $t5, $t6
+	jal	_getLED					# check x+r,y+r
+	bne	$v0, $t8, noBug3
+	jal	_searchForBug
+	addi	$s6, $s6, 1
+	li	$a2, 0
+	li	$a3, 3
+	j	exitWave
+noBug3:
+	sub	$a1, $t5, $t6
+	slt	$t0, $a1, $zero
+	bne	$t0, $zero, skip8			# skip if off screen
+	jal	_getLED					# check x+r,y-r
+	bne	$v0, $t8, skip8
+	jal	_searchForBug
+	addi	$s6, $s6, 1
+	li	$a2, 0
+	li	$a3, 3
+	j	exitWave
+skip8:
+	sub	$a0, $t4, $t6
+	add	$a1, $t5, $t6
+	slt	$t0, $a0, $zero
+	bne	$t0, $zero, skip9			# skip if off screen
+	jal	_getLED					# check x-r,y+r
+	bne	$v0, $t8, skip9
+	jal	_searchForBug
+	addi	$s6, $s6, 1
+	li	$a2, 0
+	li	$a3, 3
+	j	exitWave
+skip9:
+	sub	$a1, $t5, $t6
+	slt	$t0, $a0, $zero
+	bne	$t0, $zero, skip10
+	slt	$t0, $a1, $zero
+	bne	$t0, $zero, skip10			# skip if off screen
+	jal	_getLED					# check x-r,y-r
+	bne	$v0, $t8, skip10
+	jal	_searchForBug
+	addi	$s6, $s6, 1
+	li	$a2, 0
+	li	$a3, 3
+	j	exitWave
+skip10:
+	addi	$t7, $t6, 1				# check 2 past current spot
+	move	$a0, $t4
+	add	$a1, $t5, $t7
+	jal	_getLED					# check x,y+r
+	bne	$v0, $t8, noBug4
+	jal	_searchForBug
+	addi	$s6, $s6, 1
+	li	$a2, 0
+	li	$a3, 3
+	j	exitWave
+noBug4:
+	sub	$a1, $t5, $t7
+	slt	$t0, $a1, $zero
+	bne	$t0, $zero, skip11			# skip if off screen
+	jal	_getLED					# check x,y-r
+	bne	$v0, $t8, skip11
+	jal	_searchForBug
+	addi	$s6, $s6, 1
+	li	$a2, 0
+	li	$a3, 3
+	j	exitWave
+skip11:
+	add	$a0, $t4, $t7
+	move	$a1, $t5
+	jal	_getLED					# check x+r,y
+	bne	$v0, $t8, noBug5
+	jal	_searchForBug
+	addi	$s6, $s6, 1
+	li	$a2, 0
+	li	$a3, 3
+	j	exitWave
+noBug5:
+	sub	$a0, $t4, $t7
+	slt	$t0, $a0, $zero
+	bne	$t0, $zero, skip12			# skip if off screen
+	jal	_getLED					# check x-r,y
+	bne	$v0, $t8, skip12
+	jal	_searchForBug
+	addi	$s6, $s6, 1
+	li	$a2, 0
+	li	$a3, 3
+	j	exitWave
+skip12:
+	add	$a0, $t4, $t7
+	add	$a1, $t5, $t7
+	jal	_getLED					# check x+r,y+r
+	bne	$v0, $t8, noBug6
+	jal	_searchForBug
+	addi	$s6, $s6, 1
+	li	$a2, 0
+	li	$a3, 3
+	j	exitWave
+noBug6:
+	sub	$a1, $t5, $t7
+	slt	$t0, $a1, $zero
+	bne	$t0, $zero, skip13			# skip if off screen
+	jal	_getLED					# check x+r,y-r
+	bne	$v0, $t8, skip13
+	jal	_searchForBug
+	addi	$s6, $s6, 1
+	li	$a2, 0
+	li	$a3, 3
+	j	exitWave
+skip13:
+	sub	$a0, $t4, $t7
+	add	$a1, $t5, $t7
+	slt	$t0, $a0, $zero
+	bne	$t0, $zero, skip14			# skip if off screen
+	jal	_getLED					# check x-r,y+r
+	bne	$v0, $t8, skip14
+	jal	_searchForBug
+	addi	$s6, $s6, 1
+	li	$a2, 0
+	li	$a3, 3
+	j	exitWave
+skip14:
+	sub	$a1, $t5, $t7
+	slt	$t0, $a0, $zero
+	bne	$t0, $zero, waveNextSpot
+	slt	$t0, $a1, $zero
+	bne	$t0, $zero, waveNextSpot		# skip if off screen
+	jal	_getLED					# check x-r,y-r
+	bne	$v0, $t8, waveNextSpot
+	jal	_searchForBug
+	addi	$s6, $s6, 1
+	li	$a2, 0
+	li	$a3, 3
+	j	exitWave
 waveNextSpot:
 	move	$a0, $t4
 	li	$a2, 1
@@ -442,38 +635,38 @@ waveNextSpot:
 	jal	_setLED					# turn on x,y+r
 	sub	$a1, $t5, $t6
 	slt	$t0, $a1, $zero
-	bne	$t0, $zero, skip6			# skip if off screen
+	bne	$t0, $zero, skip16			# skip if off screen
 	jal	_setLED					# turn on x,y-r
-skip6:
+skip16:
 	add	$a0, $t4, $t6
 	move	$a1, $t5
 	jal	_setLED					# turn on x+r,y
 	sub	$a0, $t4, $t6
 	slt	$t0, $a0, $zero
-	bne	$t0, $zero, skip7			# skip if off screen
+	bne	$t0, $zero, skip17			# skip if off screen
 	jal	_setLED					# turn on x-r,y
-skip7:
+skip17:
 	add	$a0, $t4, $t6
 	add	$a1, $t5, $t6
 	jal	_setLED					# turn on x+r,y+r
 	sub	$a1, $t5, $t6
 	slt	$t0, $a1, $zero
-	bne	$t0, $zero, skip8			# skip if off screen
+	bne	$t0, $zero, skip18			# skip if off screen
 	jal	_setLED					# turn on x+r,y-r
-skip8:
+skip18:
 	sub	$a0, $t4, $t6
 	add	$a1, $t5, $t6
 	slt	$t0, $a0, $zero
-	bne	$t0, $zero, skip9			# skip if off screen
+	bne	$t0, $zero, skip19			# skip if off screen
 	jal	_setLED					# turn on x-r,y+r
-skip9:
+skip19:
 	sub	$a1, $t5, $t6
 	slt	$t0, $a0, $zero
-	bne	$t0, $zero, skip10
+	bne	$t0, $zero, skip20
 	slt	$t0, $a1, $zero
-	bne	$t0, $zero, skip10			# skip if off screen
+	bne	$t0, $zero, skip20			# skip if off screen
 	jal	_setLED					# turn on x-r,y-r
-skip10:
+skip20:
 	move	$a0, $t4
 	move	$a1, $t5
 	move	$a2, $t6
