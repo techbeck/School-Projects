@@ -232,7 +232,7 @@ bugSearchLoop2:
 	bne	$t2, $a0, bugSearchLoop2
 	lbu	$t2, -3($t0)
 	bne	$t2, $a1, bugSearchLoop2
-	li	$t1, 3
+	li	$t1, 0				# kill bug
 	sb	$t1, -1($t0)
 exitBugSearch:
 	jr	$ra
