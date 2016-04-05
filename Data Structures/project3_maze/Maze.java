@@ -42,23 +42,25 @@ public class Maze
 
 	private void createMaze(int left, int right, int top, int bottom)
 	{
-		if ((right - left) <= 1 || (bottom - top) <= 1)
+		if ((right - left) < 1 || (bottom - top) < 1)
 		{
 			return;
 		}
 		
-		int randomX = left + random.nextInt(right-left);
-		int randomY = top + random.nextInt(bottom-top);
+		//int randomX = left + random.nextInt(right-left);
+		//int randomY = top + random.nextInt(bottom-top);
+		int randomX = left;
+		int randomY = top;
 		
-		for (int i = left; i < right; i++)
+		for (int i = left; i <= right; i++)
 		{
 			maze[randomY][i].hasSouth = true;
-			if (randomY + 1 <= right)
+			if (randomY + 1 <= bottom)
 			{
 				maze[randomY+1][i].hasNorth = true;
 			}
 		}
-		for (int i = top; i < bottom; i++)
+		for (int i = top; i <= bottom; i++)
 		{
 			maze[i][randomX].hasEast = true;
 			if (randomX + 1 <= right)
@@ -66,53 +68,93 @@ public class Maze
 				maze[i][randomX+1].hasWest = true;
 			}
 		}
-
-		int tempValue = randomY-top;
-		if (tempValue <= 0) tempValue = 1;
-		int randomNorth = top + random.nextInt(tempValue);
-		maze[randomNorth][randomX].hasEast = false;
-		maze[randomNorth][randomX+1].hasWest = false;
-		tempValue = right-randomX;
-		if (tempValue <= 0) tempValue = 1;
-		int randomEast = randomX + random.nextInt(tempValue);
-		maze[randomY][randomEast].hasSouth = false;
-		maze[randomY+1][randomEast].hasNorth = false;
-		tempValue = bottom-randomY;
-		if (tempValue <= 0) tempValue = 1;
-		int randomSouth = randomY + random.nextInt(tempValue);
-		maze[randomSouth][randomX].hasEast = false;
-		maze[randomSouth][randomX+1].hasWest = false;
-		tempValue = randomX-left;
-		if (tempValue <= 0) tempValue = 1;
-		int randomWest = left + random.nextInt(tempValue);
-		maze[randomY][randomWest].hasSouth = false;
-		maze[randomY+1][randomWest].hasNorth = false;
 		
+		// FOR TESTING PURPOSES, ALWAYS NORTH NO HOLE & holes 1 off point
+		maze[randomY][left].hasSouth = false;
+		maze[randomY+1][left].hasNorth = false;
+		maze[randomY][randomX+1].hasSouth = false;
+		maze[randomY+1][randomX+1].hasNorth = false;
+		maze[randomY+1][randomX].hasEast = false;
+		maze[randomY+1][randomX+1].hasWest = false;
+
+		/*int tempValue = 1;
 		int noHoleDirection = random.nextInt(4);
 		if (noHoleDirection == 0)		// North
 		{
-			maze[randomNorth][randomX].hasEast = true;
-			maze[randomNorth][randomX+1].hasWest = true;
+			tempValue = right-randomX;
+			if (tempValue <= 0) tempValue = 1;
+			int randomEast = randomX + random.nextInt(tempValue);
+			maze[randomY][randomEast].hasSouth = false;
+			maze[randomY+1][randomEast].hasNorth = false;
+			tempValue = bottom-randomY;
+			if (tempValue <= 0) tempValue = 1;
+			int randomSouth = randomY + random.nextInt(tempValue);
+			maze[randomSouth][randomX].hasEast = false;
+			maze[randomSouth][randomX+1].hasWest = false;
+			tempValue = randomX-left;
+			if (tempValue <= 0) tempValue = 1;
+			int randomWest = left + random.nextInt(tempValue);
+			maze[randomY][randomWest].hasSouth = false;
+			maze[randomY+1][randomWest].hasNorth = false;
 		}
 		else if (noHoleDirection == 1)	// East
 		{
-			maze[randomY][randomEast].hasSouth = true;
-			maze[randomY+1][randomEast].hasNorth = true;
+			tempValue = randomY-top;
+			if (tempValue <= 0) tempValue = 1;
+			int randomNorth = top + random.nextInt(tempValue);
+			maze[randomNorth][randomX].hasEast = false;
+			maze[randomNorth][randomX+1].hasWest = false;
+			tempValue = bottom-randomY;
+			if (tempValue <= 0) tempValue = 1;
+			int randomSouth = randomY + random.nextInt(tempValue);
+			maze[randomSouth][randomX].hasEast = false;
+			maze[randomSouth][randomX+1].hasWest = false;
+			tempValue = randomX-left;
+			if (tempValue <= 0) tempValue = 1;
+			int randomWest = left + random.nextInt(tempValue);
+			maze[randomY][randomWest].hasSouth = false;
+			maze[randomY+1][randomWest].hasNorth = false;
 		}
 		else if (noHoleDirection == 2)	// South
 		{
-			maze[randomSouth][randomX].hasEast = true;
-			maze[randomSouth][randomX+1].hasWest = true;
+			tempValue = randomY-top;
+			if (tempValue <= 0) tempValue = 1;
+			int randomNorth = top + random.nextInt(tempValue);
+			maze[randomNorth][randomX].hasEast = false;
+			maze[randomNorth][randomX+1].hasWest = false;
+			tempValue = right-randomX;
+			if (tempValue <= 0) tempValue = 1;
+			int randomEast = randomX + random.nextInt(tempValue);
+			maze[randomY][randomEast].hasSouth = false;
+			maze[randomY+1][randomEast].hasNorth = false;
+			tempValue = randomX-left;
+			if (tempValue <= 0) tempValue = 1;
+			int randomWest = left + random.nextInt(tempValue);
+			maze[randomY][randomWest].hasSouth = false;
+			maze[randomY+1][randomWest].hasNorth = false;
 		}
 		else							// West
 		{
-			maze[randomY][randomWest].hasSouth = true;
-			maze[randomY+1][randomWest].hasNorth = true;
-		}
-		createMaze(left,randomX,top,randomY);
-		createMaze(randomX,right,top,randomY);
-		createMaze(randomX,right,randomY,bottom);
-		createMaze(left,randomX,randomY,bottom);
+			tempValue = randomY-top;
+			if (tempValue <= 0) tempValue = 1;
+			int randomNorth = top + random.nextInt(tempValue);
+			maze[randomNorth][randomX].hasEast = false;
+			maze[randomNorth][randomX+1].hasWest = false;
+			tempValue = right-randomX;
+			if (tempValue <= 0) tempValue = 1;
+			int randomEast = randomX + random.nextInt(tempValue);
+			maze[randomY][randomEast].hasSouth = false;
+			maze[randomY+1][randomEast].hasNorth = false;
+			tempValue = bottom-randomY;
+			if (tempValue <= 0) tempValue = 1;
+			int randomSouth = randomY + random.nextInt(tempValue);
+			maze[randomSouth][randomX].hasEast = false;
+			maze[randomSouth][randomX+1].hasWest = false;
+		}*/
+		createMaze(left,randomX-1,top,randomY-1);
+		createMaze(randomX+1,right,top,randomY-1);
+		createMaze(randomX+1,right,randomY+1,bottom);
+		createMaze(left,randomX-1,randomY+1,bottom);
 	}
 
 	/**
