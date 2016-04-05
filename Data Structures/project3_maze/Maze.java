@@ -6,7 +6,7 @@ public class Maze
 	// TO DO: Instance Variables
 	private int mazeWidth;
 	private int mazeHeight;
-	private Chamber[][] maze;
+	private Cell[][] maze;
 	private Random random;
 	
 	/**
@@ -19,14 +19,15 @@ public class Maze
 		random = new Random();
 		mazeWidth = aWidth;
 		mazeHeight = aHeight;
-		maze = new Chamber[mazeHeight][mazeWidth];
+		maze = new Cell[mazeHeight][mazeWidth];
 		for (int i = 0; i < mazeHeight; i++)
 		{
 			for (int j = 0; j < mazeWidth; j++)
 			{
-				maze[i][j] = new Chamber();
+				maze[i][j] = new Cell();
 			}
 		}
+		// Create outer walls
 		for (int i = 0; i < mazeWidth; i++)
 		{
 			maze[0][i].hasNorth = true;
@@ -42,16 +43,19 @@ public class Maze
 
 	private void createMaze(int left, int right, int top, int bottom)
 	{
+		// stop recursing when chamber has width and/or height of 1
 		if ((right - left) < 1 || (bottom - top) < 1)
 		{
 			return;
 		}
 		
+		// choose random point in chamber
 		//int randomX = left + random.nextInt(right-left);
 		//int randomY = top + random.nextInt(bottom-top);
 		int randomX = left;
 		int randomY = top;
 		
+		// create walls intersecting at that point
 		for (int i = left; i <= right; i++)
 		{
 			maze[randomY][i].hasSouth = true;
@@ -69,6 +73,7 @@ public class Maze
 			}
 		}
 		
+		// make holes in 3 walls
 		// FOR TESTING PURPOSES, ALWAYS NORTH NO HOLE & holes 1 off point
 		maze[randomY][left].hasSouth = false;
 		maze[randomY+1][left].hasNorth = false;
@@ -151,6 +156,8 @@ public class Maze
 			maze[randomSouth][randomX].hasEast = false;
 			maze[randomSouth][randomX+1].hasWest = false;
 		}*/
+
+		// recursively create maze in each new chamber
 		createMaze(left,randomX-1,top,randomY-1);
 		createMaze(randomX+1,right,top,randomY-1);
 		createMaze(randomX+1,right,randomY+1,bottom);
@@ -223,14 +230,14 @@ public class Maze
 		return maze[row][column].hasWest;
 	}
 
-	private class Chamber
+	private class Cell
 	{
 		private boolean hasNorth;
 		private boolean hasEast;
 		private boolean hasSouth;
 		private boolean hasWest;
 
-		private Chamber()
+		private Cell()
 		{
 			hasNorth = false;
 			hasEast = false;
