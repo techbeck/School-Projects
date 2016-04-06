@@ -43,6 +43,12 @@ public class Maze
 
 	private void createMaze(int left, int right, int top, int bottom)
 	{
+		System.out.println("New Chamber");
+		System.out.println("Left: " + left);
+		System.out.println("Right: " + right);
+		System.out.println("Top: " + top);
+		System.out.println("Bottom: " + bottom);
+
 		// stop recursing when chamber has width and/or height of 1
 		if ((right - left) < 1 || (bottom - top) < 1)
 		{
@@ -74,15 +80,16 @@ public class Maze
 		}
 		
 		// make holes in 3 walls
-		// FOR TESTING PURPOSES, ALWAYS NORTH NO HOLE & holes 1 off point
+		
+		/* FOR TESTING PURPOSES, ALWAYS NORTH NO HOLE & holes 1 off point
 		maze[randomY][left].hasSouth = false;
 		maze[randomY+1][left].hasNorth = false;
 		maze[randomY][randomX+1].hasSouth = false;
 		maze[randomY+1][randomX+1].hasNorth = false;
 		maze[randomY+1][randomX].hasEast = false;
-		maze[randomY+1][randomX+1].hasWest = false;
+		maze[randomY+1][randomX+1].hasWest = false;*/
 
-		/*int tempValue = 1;
+		int tempValue = 1;
 		int noHoleDirection = random.nextInt(4);
 		if (noHoleDirection == 0)		// North
 		{
@@ -155,7 +162,7 @@ public class Maze
 			int randomSouth = randomY + random.nextInt(tempValue);
 			maze[randomSouth][randomX].hasEast = false;
 			maze[randomSouth][randomX+1].hasWest = false;
-		}*/
+		}
 
 		// recursively create maze in each new chamber
 		createMaze(left,randomX-1,top,randomY-1);
