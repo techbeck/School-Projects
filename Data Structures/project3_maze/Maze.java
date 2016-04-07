@@ -71,16 +71,7 @@ public class Maze
 			}
 		}
 		
-		// make holes in 3 walls
-		
-		//FOR TESTING PURPOSES, ALWAYS NORTH NO HOLE & holes 1 off point
-		/*maze[randomY][left].hasSouth = false;
-		maze[randomY+1][left].hasNorth = false;
-		maze[randomY][randomX+1].hasSouth = false;
-		maze[randomY+1][randomX+1].hasNorth = false;
-		maze[randomY+1][randomX].hasEast = false;
-		maze[randomY+1][randomX+1].hasWest = false;*/
-
+		// make random holes in 3 walls
 		int randomNorth = top;
 		int tempValue = randomY-top-1;
 		if (tempValue > 0 && randomY > 1)
@@ -136,7 +127,7 @@ public class Maze
 			maze[randomSouth][randomX+1].hasWest = false;
 		}
 		
-		// recursively create maze in each new chamber
+		// recursively create smaller maze in each new chamber
 		createMaze(left,randomX,top,randomY);
 		createMaze(randomX+1,right,top,randomY);
 		createMaze(randomX+1,right,randomY+1,bottom);
