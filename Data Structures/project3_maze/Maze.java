@@ -56,10 +56,10 @@ public class Maze
 		}
 		
 		// choose random point in chamber
-		//int randomX = left + random.nextInt(right-left);
-		//int randomY = top + random.nextInt(bottom-top);
-		int randomX = left;
-		int randomY = top;
+		int randomX = left + random.nextInt(right-left);
+		int randomY = top + random.nextInt(bottom-top);
+		//int randomX = left;
+		//int randomY = top;
 		
 		// create walls intersecting at that point
 		for (int i = left; i <= right; i++)
@@ -81,8 +81,8 @@ public class Maze
 		
 		// make holes in 3 walls
 		
-		/* FOR TESTING PURPOSES, ALWAYS NORTH NO HOLE & holes 1 off point
-		maze[randomY][left].hasSouth = false;
+		//FOR TESTING PURPOSES, ALWAYS NORTH NO HOLE & holes 1 off point
+		/*maze[randomY][left].hasSouth = false;
 		maze[randomY+1][left].hasNorth = false;
 		maze[randomY][randomX+1].hasSouth = false;
 		maze[randomY+1][randomX+1].hasNorth = false;
@@ -163,12 +163,12 @@ public class Maze
 			maze[randomSouth][randomX].hasEast = false;
 			maze[randomSouth][randomX+1].hasWest = false;
 		}
-
+		
 		// recursively create maze in each new chamber
-		createMaze(left,randomX-1,top,randomY-1);
-		createMaze(randomX+1,right,top,randomY-1);
+		createMaze(left,randomX,top,randomY);
+		createMaze(randomX+1,right,top,randomY);
 		createMaze(randomX+1,right,randomY+1,bottom);
-		createMaze(left,randomX-1,randomY+1,bottom);
+		createMaze(left,randomX,randomY+1,bottom);
 	}
 
 	/**

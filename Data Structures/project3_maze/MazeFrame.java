@@ -5,7 +5,7 @@ public class MazeFrame
 {
 	public static void main(String[] args) throws InterruptedException
 	{
-		int width = 15;
+		int width = 10;
 		int height = 10;
 		JFrame frame = new JFrame();
 		Maze maze = new Maze(width, height);
@@ -17,10 +17,12 @@ public class MazeFrame
 		frame.add(mc);
 		frame.setVisible(true);
 		
-		//solution.add(new Pair<Integer,Integer>(0,0));
-		//Thread.sleep(1000);
-		//solveMaze(solution, mc, maze, ...);
-		//mc.repaint();
+		Pair<Integer,Integer> start = new Pair<Integer,Integer>(0,0);
+		solution.add(start);
+		Thread.sleep(1000);
+		mc.repaint();
+		solveMaze(solution, mc, maze, start, new Pair<Integer,Integer>(-1,-1));
+		System.out.println("Done");
 	}
 	
 	/** Solve Maze: recursively solve the maze
@@ -44,8 +46,73 @@ public class MazeFrame
 	 *         found.
 	 * @throws InterruptedException: We need this because of our Thread.sleep(50);
 	 */
-	/*public static boolean solveMaze(ArrayList<Pair<Integer,Integer>> solution, MazeComponent mc, Maze maze, ...) throws InterruptedException
+	public static boolean solveMaze(ArrayList<Pair<Integer,Integer>> solution, MazeComponent mc, Maze maze, Pair<Integer,Integer> currentPosition, Pair<Integer,Integer> previousPosition) throws InterruptedException
 	{
-		// TO DO
-	}*/
+		if ((currentPosition.snd() == maze.getWidth() - 1) && (currentPosition.fst() == maze.getHeight() - 1))
+		{
+			return true;
+		}
+		// solution goes East
+		Pair<Integer,Integer> nextPosition = null;
+		if (!maze.isEastWall(currentPosition.fst(), currentPosition.snd()) && (currentPosition.snd() + 1 != previousPosition.snd()))
+		{
+			nextPosition = new Pair<Integer,Integer>(currentPosition.fst(),currentPosition.snd()+1);
+			solution.add(nextPosition);
+			Thread.sleep(5);
+			mc.repaint();
+			if (solveMaze(solution, mc, maze, nextPosition, currentPosition))
+			{
+				return true;
+			}
+			solution.remove(nextPosition);
+			Thread.sleep(5);
+			mc.repaint();
+		}
+		// solution goes South
+		if (!maze.isSouthWall(currentPosition.fst(),currentPosition.snd()) && (currentPosition.fst() + 1 != previousPosition.fst()))
+		{
+			nextPosition = new Pair<Integer,Integer>(currentPosition.fst()+1,currentPosition.snd());
+			solution.add(nextPosition);
+			Thread.sleep(5);
+			mc.repaint();
+			if (solveMaze(solution, mc, maze, nextPosition, currentPosition))
+			{
+				return true;
+			}
+			solution.remove(nextPosition);
+			Thread.sleep(5);
+			mc.repaint();
+		}
+		// solution goes West
+		if (!maze.isWestWall(currentPosition.fst(),currentPosition.snd()) && (currentPosition.snd() - 1 != previousPosition.snd()))
+		{
+			nextPosition = new Pair<Integer,Integer>(currentPosition.fst(),currentPosition.snd()-1);
+			solution.add(nextPosition);
+			Thread.sleep(5);
+			mc.repaint();
+			if (solveMaze(solution, mc, maze, nextPosition, currentPosition))
+			{
+				return true;
+			}
+			solution.remove(nextPosition);
+			Thread.sleep(5);
+			mc.repaint();
+		}
+		// solution goes North
+		if (!maze.isNorthWall(currentPosition.fst(),currentPosition.snd()) && (currentPosition.fst() - 1 != previousPosition.fst()))
+		{
+			nextPosition = new Pair<Integer,Integer>(currentPosition.fst()-1,currentPosition.snd());
+			solution.add(nextPosition);
+			Thread.sleep(5);
+			mc.repaint();
+			if (solveMaze(solution, mc, maze, nextPosition, currentPosition))
+			{
+				return true;
+			}
+			solution.remove(nextPosition);
+			Thread.sleep(5);
+			mc.repaint();
+		}
+		return false;
+	}
 }
