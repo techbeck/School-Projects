@@ -5,8 +5,8 @@ public class MazeFrame
 {
 	public static void main(String[] args) throws InterruptedException
 	{
-		int width = 10;
-		int height = 10;
+		int width = 70;
+		int height = 70;
 		JFrame frame = new JFrame();
 		Maze maze = new Maze(width, height);
 		ArrayList<Pair<Integer,Integer>> solution = new ArrayList<Pair<Integer,Integer>>();
@@ -22,7 +22,6 @@ public class MazeFrame
 		Thread.sleep(1000);
 		mc.repaint();
 		solveMaze(solution, mc, maze, start, new Pair<Integer,Integer>(-1,-1));
-		System.out.println("Done");
 	}
 	
 	/** Solve Maze: recursively solve the maze
@@ -52,8 +51,23 @@ public class MazeFrame
 		{
 			return true;
 		}
-		// solution goes East
 		Pair<Integer,Integer> nextPosition = null;
+		// solution goes North
+		if (!maze.isNorthWall(currentPosition.fst(),currentPosition.snd()) && (currentPosition.fst() - 1 != previousPosition.fst()))
+		{
+			nextPosition = new Pair<Integer,Integer>(currentPosition.fst()-1,currentPosition.snd());
+			solution.add(nextPosition);
+			Thread.sleep(5);
+			mc.repaint();
+			if (solveMaze(solution, mc, maze, nextPosition, currentPosition))
+			{
+				return true;
+			}
+			solution.remove(nextPosition);
+			Thread.sleep(5);
+			mc.repaint();
+		}
+		// solution goes East
 		if (!maze.isEastWall(currentPosition.fst(), currentPosition.snd()) && (currentPosition.snd() + 1 != previousPosition.snd()))
 		{
 			nextPosition = new Pair<Integer,Integer>(currentPosition.fst(),currentPosition.snd()+1);
@@ -98,21 +112,7 @@ public class MazeFrame
 			Thread.sleep(5);
 			mc.repaint();
 		}
-		// solution goes North
-		if (!maze.isNorthWall(currentPosition.fst(),currentPosition.snd()) && (currentPosition.fst() - 1 != previousPosition.fst()))
-		{
-			nextPosition = new Pair<Integer,Integer>(currentPosition.fst()-1,currentPosition.snd());
-			solution.add(nextPosition);
-			Thread.sleep(5);
-			mc.repaint();
-			if (solveMaze(solution, mc, maze, nextPosition, currentPosition))
-			{
-				return true;
-			}
-			solution.remove(nextPosition);
-			Thread.sleep(5);
-			mc.repaint();
-		}
+		
 		return false;
 	}
 }
