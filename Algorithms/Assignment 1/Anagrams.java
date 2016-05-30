@@ -11,26 +11,28 @@ Program prints anagrams found from strings read from a file to a separate file.
 */
 public class Anagrams
 {
-
-	static SortedSet<String> anagrams;
-	static DictInterface dict = new MyDictionary();
+	static String inputString;
+	static int wordCount;
+	static int start;
+	static DictInterface dict;
+	static ArrayList<SortedSet<String>> anagrams;
+	static ArrayList<Character> used;
 
 	public static void main(String[] args)
 	{
 		// Generate dictionary and get input strings
-		File dictFile = new File("dictionary.txt");
-		File inputFile = null;
-		File outputFile = null;
 		Scanner dictScan = null;
 		Scanner inScan = null;
 		PrintWriter outWriter = null;
+		PrintWriter timeWriter = null;
+		String dictType = null;
 		try
 		{
-			inputFile = new File(args[0]);
-			outputFile = new File(args[1]);
-			dictScan = new Scanner(dictFile);
-			inScan = new Scanner(inputFile);
-			outWriter = new PrintWriter(outputFile);
+			dictType = args[2];
+			dictScan = new Scanner(new File("dictionary.txt"));
+			inScan = new Scanner(new File(args[0]));
+			outWriter = new PrintWriter(new File(args[1]));
+			timeWriter = new PrintWriter(new File("times" + 5 + ".txt"));
 		}
 		catch (IOException io)
 		{
@@ -39,8 +41,21 @@ public class Anagrams
 		}
 		catch (Exception e)
 		{
-			System.out.println("Need command line argument(s) for file name(s)");
+			System.out.println("Missing command line argument(s)");
 			System.out.println(e);
+			System.exit(0);
+		}
+		if (dictType.equals("orig"))
+		{
+			dict = new MyDictionary();
+		}
+		else if (dictType.equals("dlb"))
+		{
+			dict = new DLB();
+		}
+		else
+		{
+			System.out.println("Incorrect dictionary type.");
 			System.exit(0);
 		}
 		while (dictScan.hasNext())
@@ -50,65 +65,101 @@ public class Anagrams
 		ArrayList<String> input = new ArrayList<String>();
 		while (inScan.hasNext())
 		{
-			input.add(inScan.nextLine());
+			input.add(inScan.nextLine().replaceAll("\\s",""));
 		}
 		
 		// Generate anagrams output file
 		for (String str : input)
 		{
+			System.out.printf("Milliseconds elapsed for word %s: ", str);
+			Calendar cal1 = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+			long pastTime = cal1.getTimeInMillis();
+			inputString = str;
+			wordCount = 0;
 			// create new object for each anagram set
-			anagrams = new TreeSet<String>();
+			anagrams = new ArrayList<SortedSet<String>>();
+			anagrams.add(new TreeSet<String>());
 			outWriter.printf("Here are the results for %s:\n", str);
-			outWriter.println("1 word solutions:");
-			getAnagrams(str);
-			for (String anagram : anagrams)
+			StringBuilder anagram = new StringBuilder("");
+			char[] cArray = str.toCharArray();
+			ArrayList<Character> chars = new ArrayList<Character>();
+			for (int i = 0; i < cArray.length; i++)
 			{
-				outWriter.println(anagram);
+				chars.add(cArray[i]);
 			}
+			getAnagrams(anagram, chars);
+			for (int i = 0; i < anagrams.size(); i++)
+			{
+				SortedSet<String> set = anagrams.get(i);
+				if (!set.isEmpty())
+				{
+					outWriter.printf("%d word solutions:\n", i+1);
+					for (String anAnagram : set)
+					{
+						outWriter.println(anAnagram);
+					}
+				}
+			}
+			Calendar cal2 = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+			long currentTime = cal2.getTimeInMillis();
+			long timeElapsed = currentTime - pastTime;
+			System.out.println(timeElapsed);
+			timeWriter.println(timeElapsed);
 			outWriter.println();
 		}
 
 		dictScan.close();
 		inScan.close();
 		outWriter.close();
+		timeWriter.close();
 	}
 
-	public static void getAnagrams(String s)
+	public static void getAnagrams(StringBuilder anagram, ArrayList<Character> chars)
 	{
-		char[] carray = s.toCharArray();
-		ArrayList<Character> chars = new ArrayList<Character>();
-		for (int i = 0; i < carray.length; i++)
+		if (wordCount == 0 || numberOfSpaces(anagram) == wordCount)
 		{
-			chars.add(carray[i]);
+			wordCount++;
 		}
-		StringBuilder anagram;
+		used = new ArrayList<Character>();
 		for (int i = 0; i < chars.size(); i++)
 		{
-			char character = chars.get(0);
+			// New anagram stringbuilder for each starting character
 			anagram = new StringBuilder();
+			char character = chars.get(0);
+			if (used.contains(character))
+			{
+				continue;
+			}
 			anagram.append(character);
 			chars.remove(0);
+			used.add(character);
 			recAnagrams(anagram, chars);
 			chars.add(character);
+			used.remove(used.indexOf(character));
 		}
 	}
 
 	public static void recAnagrams(StringBuilder anagram, ArrayList<Character> chars)
 	{
-		int status = dict.searchPrefix(anagram);
-		if (chars.isEmpty())
+		int start = anagram.lastIndexOf(" ")+1;
+		int end = anagram.length()-1;
+		int charsSize = chars.size();
+		int status = dict.searchPrefix(anagram, start, end);
+		if (charsSize == 0)
 		{
+			// If anagram is word and all characters are used up, add to anagrams set
 			if (status == 2 || status == 3)
 			{
-				anagrams.add(anagram.toString());
+				anagrams.get(wordCount-1).add(anagram.toString());
 			}
 			return;
 		}
 		switch (status) {
-			case 0:		// anagram is neither 
+			case 0:
+				// Anagram is neither prefix nor word
 				return;
-			case 1:		// anagram is prefix not word, and chars not used up
-				int charsSize = chars.size();
+			case 1:
+				// Anagram is prefix not word, and chars not used up
 				for (int i = 0; i < charsSize; i++)
 				{
 					char character = chars.get(0);
@@ -119,16 +170,48 @@ public class Anagrams
 					anagram.deleteCharAt(anagram.length()-1);
 				}
 				return;
-			case 2:		// anagram is word, not prefix, and chars not used up
-				/**
-					USE THIS FOR MULTI-WORD ANAGRAMS
-					BE SURE THAT THE SEARCHPREFIX AT TOP ONLY HAS START OF NEW WORD,
-							NOT THIS WORD TOO
-				*/
+			case 2:
+				// Anagram is word, not prefix, and chars not used up
+				// Check for multi word anagrams
+				anagram.append(" ");
+				wordCount++;
+				if (anagrams.size() <= wordCount)
+				{
+					anagrams.add(new TreeSet<String>());
+				}
+				for (int i = 0; i < charsSize; i++)
+				{
+					char character = chars.get(0);
+					anagram.append(character);
+					chars.remove(0);
+					recAnagrams(anagram, chars);
+					chars.add(character);
+					anagram.deleteCharAt(anagram.length()-1);
+				}
+				anagram.deleteCharAt(anagram.length()-1);
+				wordCount--;
 				return;
-			case 3:		// anagram is both word and prefix, and chars not used up
-				int size = chars.size();
-				for (int i = 0; i < size; i++)
+			case 3:
+				// Anagram is both word and prefix, and chars not used up
+				// Check for multi word anagrams and continue checking for singles
+				anagram.append(" ");
+				wordCount++;
+				if (anagrams.size() <= wordCount)
+				{
+					anagrams.add(new TreeSet<String>());
+				}
+				for (int i = 0; i < charsSize; i++)
+				{
+					char character = chars.get(0);
+					anagram.append(character);
+					chars.remove(0);
+					recAnagrams(anagram, chars);
+					chars.add(character);
+					anagram.deleteCharAt(anagram.length()-1);
+				}
+				anagram.deleteCharAt(anagram.length()-1);
+				wordCount--;
+				for (int i = 0; i < charsSize; i++)
 				{
 					char character = chars.get(0);
 					anagram.append(character);
@@ -139,5 +222,18 @@ public class Anagrams
 				}
 				return;
 		}
+	}
+
+	public static int numberOfSpaces(StringBuilder sb)
+	{
+		int spaces = 0;
+		for (int i = 0; i < sb.length(); i++)
+		{
+			if (sb.charAt(i) == ' ')
+			{
+				spaces++;
+			}
+		}
+		return spaces;
 	}
 }
