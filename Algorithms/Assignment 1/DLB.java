@@ -18,26 +18,41 @@ public class DLB implements DictInterface
 			root = new Node(s.charAt(0));
 		}
 		Node currentNode = root;
-		StringBuilder sb = new StringBuilder();
-		sb.append(s.getChar(0));
-		int status = searchPrefix(sb);
-		int startIndex;
+		int index;
 		// Find common prefix
-		for (startIndex = 1; startIndex < s.length() && status != 0; startIndex++)
+		for (index = 0; currentNode.child != null; index++)
 		{
-			sb.append(s.getChar(startIndex));
-			status = searchPrefix(sb);
+			boolean found = false;
+			if (currentNode.character == s.charAt(index))
+			{
+				found = true;
+			}
+			while (currentNode.sibling != null && !found)
+			{
+				currentNode = currentNode.sibling;
+				if (currentNode.character == s.charAt(index))
+				{
+					found = true;
+				}
+			}
+			if (!found)
+			{
+				currentNode.sibling = new Node(s.charAt(index));
+				currentNode = currentNode.sibling;
+			}
+			if (currentNode.child != null)
+			{
+				currentNode = currentNode.child;
+			}
+		}
+		// index == index after common prefix ends
+		for ( ; index < s.length(); index++)
+		{
+			currentNode.child = new Node(s.charAt(index));
 			currentNode = currentNode.child;
 		}
-		if (startIndex == s.length())
-		{
-			return true;
-		}
-		for (int i = startIndex; i < s.length(); i++)
-		{
-			currentNode.setChild(new Node(s.charAt(startIndex)));
-			currentNode = currentNode.child;
-		}
+		currentNode.child = new Node('$');
+		return true;
 	}
 
 	/*
@@ -53,34 +68,89 @@ public class DLB implements DictInterface
 			return 0;
 		}
 		Node currentNode = root;
-		String str = s.toString();
-		return recSearchPrefix(currentNode, str);
+		StringBuilder sb = new StringBuilder();
+		sb.append(s.toString());
+		return recSearchPrefix(currentNode, sb, 0);
 	}
 
 	public int searchPrefix(StringBuilder s, int start, int end)
 	{
-		if (root == null)
+		if (s == null || s.length() == 0 || root == null)
+		{
+			return 0;
+		}
+		if (start < 0 || end > s.length())
 		{
 			return 0;
 		}
 		Node currentNode = root;
-		String str = s.substring(start, end+1);
-		return recSearchPrefix(currentNode, str);
+		StringBuilder sb = new StringBuilder();
+		sb.append(s.substring(start, end+1));
+		return recSearchPrefix(currentNode, sb, 0);
 	}
 
-	private recSearchPrefix(Node currentNode, String str)
+	private int recSearchPrefix(Node currentNode, StringBuilder sb, int index)
 	{
-		if (currentNode.character == '$')
+		/*if (sb.length() == 1 && sb.toString().equals("a"))
 		{
-			if (currentNode.sibling != null)
+			return 3;
+		}*/
+		boolean prefix = false;
+		boolean word = false;
+		if (currentNode == null)
+		{
+			return 0;
+		}
+		if (index == sb.length())
+		{
+			if (currentNode.child != null)
 			{
-				return 3;
+				prefix = true;
 			}
-			else
+			if (currentNode.character == '$')
 			{
-				return 2;
+				if (currentNode.sibling != null)
+				{
+					prefix = true;
+					word = true;
+				}
+				else
+				{
+					word = true;
+				}
 			}
 		}
+		if (prefix && word)
+		{
+			return 3;
+		}
+		else if (prefix)
+		{
+			return 1;
+		}
+		else if (word)
+		{
+			return 2;
+		}
+		
+		boolean found = false;
+		if (currentNode.character == sb.charAt(index))
+		{
+			found = true;
+		}
+		while (currentNode.sibling != null && !found)
+		{
+			currentNode = currentNode.sibling;
+			if (currentNode.character == sb.charAt(index))
+			{
+				found = true;
+			}
+		}
+		if (!found)
+		{
+			return 0;
+		}
+		return recSearchPrefix(currentNode.child, sb, index+1);
 	}
 
 	private class Node
@@ -94,16 +164,6 @@ public class DLB implements DictInterface
 			character = _character;
 			sibling = null;
 			child = null;
-		}
-
-		private setSib(Node _sibling)
-		{
-			sibling = _sibling;
-		}
-
-		private setChild(Node _child)
-		{
-			child = _child;
 		}
 	}
 }

@@ -16,7 +16,7 @@ public class Anagrams
 	static int start;
 	static DictInterface dict;
 	static ArrayList<SortedSet<String>> anagrams;
-	static ArrayList<Character> used;
+	//static ArrayList<Character> used;
 
 	public static void main(String[] args)
 	{
@@ -32,7 +32,7 @@ public class Anagrams
 			dictScan = new Scanner(new File("dictionary.txt"));
 			inScan = new Scanner(new File(args[0]));
 			outWriter = new PrintWriter(new File(args[1]));
-			timeWriter = new PrintWriter(new File("times" + 5 + ".txt"));
+			timeWriter = new PrintWriter(new File("times.txt"));
 		}
 		catch (IOException io)
 		{
@@ -120,22 +120,22 @@ public class Anagrams
 		{
 			wordCount++;
 		}
-		used = new ArrayList<Character>();
+		//used = new ArrayList<Character>();
 		for (int i = 0; i < chars.size(); i++)
 		{
 			// New anagram stringbuilder for each starting character
 			anagram = new StringBuilder();
 			char character = chars.get(0);
-			if (used.contains(character))
+			/*if (used.contains(character))
 			{
 				continue;
-			}
+			}*/
 			anagram.append(character);
 			chars.remove(0);
-			used.add(character);
+			//used.add(character);
 			recAnagrams(anagram, chars);
 			chars.add(character);
-			used.remove(used.indexOf(character));
+			//used.remove(used.indexOf(character));
 		}
 	}
 
