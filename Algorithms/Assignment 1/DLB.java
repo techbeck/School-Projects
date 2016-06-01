@@ -46,7 +46,7 @@ public class DLB implements DictInterface
 			}
 		}
 		// index == index after common prefix ends
-		for ( ; index < s.length(); index++)
+		for ( ; (index < s.length()) && (s.length() != 1); index++)
 		{
 			currentNode.child = new Node(s.charAt(index));
 			currentNode = currentNode.child;
@@ -63,38 +63,33 @@ public class DLB implements DictInterface
 	*/
 	public int searchPrefix(StringBuilder s)
 	{
+		// No string to check or no words in dictionary
 		if (s == null || s.length() == 0 || root == null)
 		{
 			return 0;
 		}
-		Node currentNode = root;
-		StringBuilder sb = new StringBuilder();
-		sb.append(s.toString());
-		return recSearchPrefix(currentNode, sb, 0);
+		return recSearchPrefix(root, s, 0);
 	}
 
 	public int searchPrefix(StringBuilder s, int start, int end)
 	{
+		// No string to check or no words in dictionary
 		if (s == null || s.length() == 0 || root == null)
 		{
 			return 0;
 		}
+		// Invalid bounds
 		if (start < 0 || end > s.length())
 		{
 			return 0;
 		}
-		Node currentNode = root;
 		StringBuilder sb = new StringBuilder();
 		sb.append(s.substring(start, end+1));
-		return recSearchPrefix(currentNode, sb, 0);
+		return recSearchPrefix(root, sb, 0);
 	}
 
 	private int recSearchPrefix(Node currentNode, StringBuilder sb, int index)
 	{
-		/*if (sb.length() == 1 && sb.toString().equals("a"))
-		{
-			return 3;
-		}*/
 		boolean prefix = false;
 		boolean word = false;
 		if (currentNode == null)

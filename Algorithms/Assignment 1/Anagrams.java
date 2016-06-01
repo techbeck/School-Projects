@@ -114,7 +114,7 @@ public class Anagrams
 		timeWriter.close();
 	}
 
-	public static void getAnagrams(StringBuilder anagram, ArrayList<Character> chars)
+	private static void getAnagrams(StringBuilder anagram, ArrayList<Character> chars)
 	{
 		if (wordCount == 0 || numberOfSpaces(anagram) == wordCount)
 		{
@@ -139,7 +139,7 @@ public class Anagrams
 		}
 	}
 
-	public static void recAnagrams(StringBuilder anagram, ArrayList<Character> chars)
+	private static void recAnagrams(StringBuilder anagram, ArrayList<Character> chars)
 	{
 		int start = anagram.lastIndexOf(" ")+1;
 		int end = anagram.length()-1;
@@ -224,7 +224,7 @@ public class Anagrams
 		}
 	}
 
-	public static int numberOfSpaces(StringBuilder sb)
+	private static int numberOfSpaces(StringBuilder sb)
 	{
 		int spaces = 0;
 		for (int i = 0; i < sb.length(); i++)
