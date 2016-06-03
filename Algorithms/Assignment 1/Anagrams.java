@@ -11,12 +11,9 @@ Program prints anagrams found from strings read from a file to a separate file.
 */
 public class Anagrams
 {
-	static String inputString;
 	static int wordCount;
-	static int start;
 	static DictInterface dict;
 	static ArrayList<SortedSet<String>> anagrams;
-	//static ArrayList<Character> used;
 
 	public static void main(String[] args)
 	{
@@ -74,7 +71,6 @@ public class Anagrams
 			System.out.printf("Milliseconds elapsed for word %s: ", str);
 			Calendar cal1 = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 			long pastTime = cal1.getTimeInMillis();
-			inputString = str;
 			wordCount = 0;
 			// create new object for each anagram set
 			anagrams = new ArrayList<SortedSet<String>>();
@@ -100,12 +96,12 @@ public class Anagrams
 					}
 				}
 			}
+			outWriter.println();
 			Calendar cal2 = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 			long currentTime = cal2.getTimeInMillis();
 			long timeElapsed = currentTime - pastTime;
 			System.out.println(timeElapsed);
 			timeWriter.println(timeElapsed);
-			outWriter.println();
 		}
 
 		dictScan.close();
@@ -116,11 +112,8 @@ public class Anagrams
 
 	private static void getAnagrams(StringBuilder anagram, ArrayList<Character> chars)
 	{
-		if (wordCount == 0 || numberOfSpaces(anagram) == wordCount)
-		{
-			wordCount++;
-		}
-		//used = new ArrayList<Character>();
+		wordCount = 1;
+		//ArrayList<Character> used = new ArrayList<Character>();
 		for (int i = 0; i < chars.size(); i++)
 		{
 			// New anagram stringbuilder for each starting character
@@ -135,7 +128,6 @@ public class Anagrams
 			//used.add(character);
 			recAnagrams(anagram, chars);
 			chars.add(character);
-			//used.remove(used.indexOf(character));
 		}
 	}
 
@@ -222,18 +214,5 @@ public class Anagrams
 				}
 				return;
 		}
-	}
-
-	private static int numberOfSpaces(StringBuilder sb)
-	{
-		int spaces = 0;
-		for (int i = 0; i < sb.length(); i++)
-		{
-			if (sb.charAt(i) == ' ')
-			{
-				spaces++;
-			}
-		}
-		return spaces;
 	}
 }
