@@ -10,16 +10,18 @@ public class PHPArray<V> implements Iterable<V>
 {
 	private int count;
 	private int capacity;
-	private Node[] hashTable;
-	private Node first;
-	private Node last;
-	private Node curr;
+	private Node<V>[] hashTable;
+	private Node<V> first;
+	private Node<V> last;
+	private Node<V> curr;
 
 	public PHPArray(int initSize)
 	{
 		count = 0;
 		capacity = initSize;
-		hashTable = new Node[capacity];
+		@SuppressWarnings("unchecked")
+    	Node<V>[] ht = (Node<V>[]) new Node<?>[capacity];
+    	hashTable = ht;
 		first = null;
 		last = null;
 	}
@@ -40,15 +42,19 @@ public class PHPArray<V> implements Iterable<V>
 				return;
 			}
 		}
-		hashTable[i] = new Node(new Pair<V>(k,v));
-		hashTable[i].previous = last;
-		last.next = hashTable[i];
-		last = hashTable[i];
+		hashTable[i] = new Node<V>(new Pair<V>(k,v));
 		if (first == null)
 		{
 			first = hashTable[i];
 			curr = first;
 		}
+		if (last == null)
+		{
+			last = hashTable[i];
+		}
+		hashTable[i].previous = last;
+		last.next = hashTable[i];
+		last = hashTable[i];
 	}
 
 	// convert int to string, then call regular put()
@@ -63,10 +69,15 @@ public class PHPArray<V> implements Iterable<V>
 	// resize hashtable
 	private void resize(int newCap)
 	{
+		System.out.print("Size: " + count);
+		System.out.println(" -- resizing array from " + capacity + " to " + newCap);
 		PHPArray<V> temp = new PHPArray<V>(newCap);
 		for (int i = 0; i < capacity; i++)
 		{
-			temp.put(hashTable[i].data.key, hashTable[i].data.value);
+			if (hashTable[i] != null)
+			{
+				temp.put(hashTable[i].data.key, hashTable[i].data.value);
+			}
 		}
 		this.hashTable = temp.hashTable;
 		this.first = temp.first;
@@ -126,18 +137,15 @@ public class PHPArray<V> implements Iterable<V>
 		}
 		hashTable[i].previous.next = hashTable[i].next;
 		hashTable[i].next.previous = hashTable[i].previous;
-		hashTable[i].data.key = null;
-		hashTable[i].data.value = null;
+		hashTable[i] = null;
 
 		// rehash all keys in same cluster
 		i = (i + 1) % capacity;
 		while (hashTable[i] != null) {
-			// delete keys[i] an vals[i] and reinsert
 			String keyToRehash = hashTable[i].data.key;
 			System.out.println("Key " + keyToRehash + " rehashed...\n");
             V valToRehash = hashTable[i].data.value;
-			hashTable[i].data.key = null;
-			hashTable[i].data.value = null;
+			hashTable[i] = null;
 			count--;  
 			put(keyToRehash, valToRehash);
 			i = (i + 1) % capacity;
@@ -155,6 +163,10 @@ public class PHPArray<V> implements Iterable<V>
 
 	public Pair<V> each()
 	{
+		if (curr == null)
+		{
+			return null;
+		}
 		Pair<V> currPair = curr.data;
 		curr = curr.next;
 		return currPair;
@@ -188,11 +200,12 @@ public class PHPArray<V> implements Iterable<V>
 
 	public Iterator<V> iterator()
 	{
-		return new ArrayIterator<V>();
+		return new ArrayIterator();
 	}
 
 	public void showTable()
 	{
+		System.out.println("Raw Hash Table Contents:");
 		for (int i = 0; i < capacity; i++)
 		{
 			System.out.print(i + ": ");
@@ -245,9 +258,9 @@ public class PHPArray<V> implements Iterable<V>
 	}
 
 	// iterates through linked list
-	private class ArrayIterator<V> implements Iterator<V>
+	private class ArrayIterator implements Iterator<V>
 	{
-		private Node current;
+		private Node<V> current;
 
 		public ArrayIterator()
 		{
