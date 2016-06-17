@@ -5,6 +5,8 @@ CS 1501
 
 import java.lang.Iterable;
 import java.util.Iterator;
+import java.lang.Comparable;
+import java.lang.IllegalArgumentException;
 
 public class PHPArray<V> implements Iterable<V>
 {
@@ -24,6 +26,7 @@ public class PHPArray<V> implements Iterable<V>
     	hashTable = ht;
 		first = null;
 		last = null;
+		curr = null;
 	}
 
 	// put new (key, value) pair into array
@@ -34,7 +37,7 @@ public class PHPArray<V> implements Iterable<V>
 		if (count >= capacity/2) resize(2*capacity);
 		count++;
 		int i;
-		for (i = hash(k); hashTable[i] != null; i++)
+		for (i = hash(k, capacity); hashTable[i] != null; i++)
 		{
 			if (hashTable[i].data.key.equals(k))
 			{
@@ -69,26 +72,25 @@ public class PHPArray<V> implements Iterable<V>
 	// resize hashtable
 	private void resize(int newCap)
 	{
-		System.out.print("Size: " + count);
+		System.out.print("\t\tSize: " + count);
 		System.out.println(" -- resizing array from " + capacity + " to " + newCap);
-		PHPArray<V> temp = new PHPArray<V>(newCap);
+		@SuppressWarnings("unchecked")
+		Node<V>[] temp = (Node<V>[]) new Node<?>[newCap];
 		for (int i = 0; i < capacity; i++)
 		{
 			if (hashTable[i] != null)
 			{
-				temp.put(hashTable[i].data.key, hashTable[i].data.value);
+				temp[hash(hashTable[i].data.key, newCap)] = hashTable[i];
 			}
 		}
-		this.hashTable = temp.hashTable;
-		this.first = temp.first;
-		this.last = temp.last;
+		hashTable = temp;
 		capacity = newCap;
 	}
 
 	// return value associated with given key. if not found, return null.
 	public V get(String k)
 	{
-		for (int i = hash(k); hashTable[i] != null; i = (i + 1) % capacity) 
+		for (int i = hash(k, capacity); hashTable[i] != null; i = (i + 1) % capacity) 
 		{
 			if (hashTable[i].data.key.equals(k))
 			{
@@ -120,7 +122,7 @@ public class PHPArray<V> implements Iterable<V>
 		}
 
 		// find position i of key
-		int i = hash(k);
+		int i = hash(k, capacity);
 		while (!k.equals(hashTable[i].data.key))
 		{
 			i = (i + 1) % capacity;
@@ -143,11 +145,15 @@ public class PHPArray<V> implements Iterable<V>
 		i = (i + 1) % capacity;
 		while (hashTable[i] != null) {
 			String keyToRehash = hashTable[i].data.key;
-			System.out.println("Key " + keyToRehash + " rehashed...\n");
+			System.out.println("\t\tKey " + keyToRehash + " rehashed...\n");
             V valToRehash = hashTable[i].data.value;
 			hashTable[i] = null;
-			count--;  
-			put(keyToRehash, valToRehash);
+			int newHash = hash(keyToRehash, capacity);
+			while (hashTable[newHash] != null)
+			{
+				newHash++;
+			}
+			hashTable[newHash] = new Node<V>(new Pair<V>(keyToRehash, valToRehash));
 			i = (i + 1) % capacity;
 		}
 
@@ -179,23 +185,132 @@ public class PHPArray<V> implements Iterable<V>
 
 	public int length()
 	{
-		return capacity;
+		return count;
 	}
 
 	public void sort()
 	{
-
+		if (!(first.data.value instanceof Comparable))
+		{
+			throw new IllegalArgumentException();
+		}
+		if (first == null || first.next == null)
+		{
+			return;
+		}
+		// need array without the null elements of hashTable
+		Node<V>[] a = linkedListToArray();
+		@SuppressWarnings("unchecked")
+		Node<V>[] temp = (Node<V>[]) new Node<?>[count];
+		mergeSort(a, temp, 0, count-1);
+		// copy into hashTable, create new linked list, & alter keys
+		first = a[0];
+		hashTable[0] = a[0];
+		hashTable[0].data.key = "0";
+		int i;
+		for (i = 1; i < a.length; i++)
+		{
+			String key = Integer.toString(i);
+			hashTable[hash(key, capacity)] = a[i];
+			hashTable[hash(key, capacity)].data.key = key;
+			a[i-1].next = a[i];
+			a[i].previous = a[i-1];
+		}
+		a[i-1].next = null;
 	}
 
 	public void asort()
 	{
+		if (!(first.data.value instanceof Comparable))
+		{
+			throw new IllegalArgumentException();
+		}
+		if (first == null || first.next == null)
+		{
+			return;
+		}
+		// need array without the null elements of hashTable
+		Node<V>[] a = linkedListToArray();
+		@SuppressWarnings("unchecked")
+		Node<V>[] temp = (Node<V>[]) new Node<?>[count];
+		mergeSort(a, temp, 0, count-1);
+		// create new linked list
+		first = a[0];
+		int i;
+		for (i = 1; i < count; i++)
+		{
+			a[i-1].next = a[i];
+			a[i].previous = a[i-1];
+		}
+		a[i-1].next = null;
+	}
 
+	private void mergeSort(Node<V>[] a, Node<V>[] temp, int start, int end)
+	{
+		if( start < end )
+		{
+			int center = (start + end) / 2;
+			mergeSort(a, temp, start, center);
+			mergeSort(a, temp, center + 1, end);
+			merge(a, temp, start, center + 1, end);
+		}
+	}
+
+	private void merge(Node<V>[] a, Node<V>[] temp, int start, int middle, int end )
+	{
+		int startEnd = middle - 1;
+		int k = start;
+		int num = end - start + 1;
+
+		while(start <= startEnd && middle <= end)
+		{
+			if(a[start].compareTo(a[middle]) <= 0)
+			{
+				temp[k++] = a[start++];
+			}
+			else
+			{
+				temp[k++] = a[middle++];
+			}
+		}
+		while(start <= startEnd)    // Copy rest of first half
+		{
+			temp[k] = a[start];
+			k++;
+			start++;
+		}
+		while(middle <= end)  // Copy rest of second half
+		{
+			temp[k] = a[middle];
+			k++;
+			middle++;
+		}
+		// Copy temp back
+		for(int i = 0; i < num; i++, end--)
+		{
+			a[end] = temp[end];
+		}
+	}
+
+	public Node<V>[] linkedListToArray()
+	{
+		@SuppressWarnings("unchecked")
+    	Node<V>[] temp = (Node<V>[]) new Node<?>[count];
+    	Node<V> curr = first;
+    	int index = 0;
+		while(index < count)
+		{
+			temp[index] = curr;
+			curr = curr.next;
+			index++;
+		}
+		return temp;
 	}
 
 	// hash code of string, made positive, and modded to fit in table
-	private int hash(String key)
+	private int hash(String key, int cap)
 	{
-		return (key.hashCode() & 0x7fffffff) % capacity;
+		return (key.hashCode() & 0x7fffffff) % cap;
 	}
 
 	public Iterator<V> iterator()
@@ -205,7 +320,7 @@ public class PHPArray<V> implements Iterable<V>
 
 	public void showTable()
 	{
-		System.out.println("Raw Hash Table Contents:");
+		System.out.println("\tRaw Hash Table Contents:");
 		for (int i = 0; i < capacity; i++)
 		{
 			System.out.print(i + ": ");
@@ -233,7 +348,7 @@ public class PHPArray<V> implements Iterable<V>
 	}
 
 	// node holding pair info and linked list info
-	private static class Node<V>
+	private static class Node<V> implements Comparable<Node<V>>
 	{
 		private Pair<V> data;
 		private Node<V> next;
@@ -255,6 +370,15 @@ public class PHPArray<V> implements Iterable<V>
 		{
 			System.out.println("Key: " + data.key + " Value: " + data.value);
 		}
+
+		public int compareTo(Node<V> n)
+		{
+			V thisData = this.data.value;
+			V nData = n.data.value;
+			@SuppressWarnings("unchecked")
+			int compare = ((Comparable<V>) thisData).compareTo(nData);
+			return compare;
+		}
 	}
 
 	// iterates through linked list
@@ -269,7 +393,7 @@ public class PHPArray<V> implements Iterable<V>
 
 		public boolean hasNext()
 		{
-			if (current.next != null)
+			if (current != null)
 			{
 				return true;
 			}
@@ -278,8 +402,9 @@ public class PHPArray<V> implements Iterable<V>
 
 		public V next()
 		{
+			V val = current.data.value;
 			current = current.next;
-			return current.data.value;
+			return val;
 		}
 	}
 }
