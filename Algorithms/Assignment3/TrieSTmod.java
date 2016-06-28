@@ -27,7 +27,9 @@ public class TrieSTmod<Value> {
     public Value get(StringBuilder key) {
         Node x = get(root, key, 0);
         if (x == null) return null;
-        return (Value) x.val;
+        @SuppressWarnings("unchecked")
+        Value v = (Value) x.val;
+        return v;
     }
 
     private Node get(Node x, StringBuilder key, int d) {
@@ -143,12 +145,12 @@ public class TrieSTmod<Value> {
         // build symbol table from standard input
         TrieST<Integer> st = new TrieST<Integer>();
         for (int i = 0; !StdIn.isEmpty(); i++) {
-            StringBuilder key = StdIn.readString();
+            String key = StdIn.readString();
             st.put(key, i);
         }
 
         // print results
-        for (StringBuilder key : st.keys()) {
+        for (String key : st.keys()) {
             StdOut.println(key + " " + st.get(key));
         }
     }*/
