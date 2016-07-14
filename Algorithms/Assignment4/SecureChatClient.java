@@ -53,31 +53,28 @@ public class SecureChatClient extends JFrame implements Runnable, ActionListener
                 System.out.println("Problem getting encryption information");
                 System.exit(1);
             }
-            /*System.out.print("E received from server: ");
+            System.out.print("E received from server: ");
             System.out.println(serverE);
             System.out.print("N received from server: ");
             System.out.println(serverN);
-            System.out.print("Encryption type: ");*/
+            System.out.print("Encryption type: ");
             if (encType.equals("Sub")) {
                 cipher = new Substitute();
-                //System.out.println("Substitute");
+                System.out.println("Substitute");
             } else {
                 cipher = new Add128();
-                //System.out.println("Add128");
+                System.out.println("Add128");
             }
             byte[] key = cipher.getKey();
-            /*System.out.print("Key: ");
+            System.out.print("Key: ");
             for (int i = 0; i < key.length; i++) {
                 System.out.print(key[i] + " ");
             }
-            System.out.println();*/
-            int signum = 0;
-            if (key[0] > 0) {
-                signum = 1;
-            } else if (key[0] < 0) {
-                signum = -1;
+            System.out.println("\n");
+            BigInteger bigKey = new BigInteger(1, key);
+            if (bigKey.compareTo(BigInteger.ZERO) < 0) {
+                System.out.println("PROBLEM ? \n\n\n\n\n\n");
             }
-            BigInteger bigKey = new BigInteger(signum, key);
             BigInteger encKey = bigKey.modPow(serverE, serverN);
             try {
                 myWriter.writeObject(encKey);
@@ -151,20 +148,21 @@ public class SecureChatClient extends JFrame implements Runnable, ActionListener
         {
              try {
                 byte[] msgBytes = (byte[]) myReader.readObject();
-                /*System.out.print("Read byte array: ");
+                System.out.print("Read byte array: ");
                 for (int i = 0; i < msgBytes.length; i++) {
                     System.out.print(msgBytes[i] + " ");
                 }
-                System.out.println();*/
+                System.out.println();
                 String currMsg = cipher.decode(msgBytes);
-                /*byte[] dcdBytes = currMsg.getBytes();
+                byte[] dcdBytes = currMsg.getBytes();
                 System.out.print("Decoded byte array: ");
                 for (int i = 0; i < dcdBytes.length; i++) {
                     System.out.print(dcdBytes[i] + " ");
                 }
                 System.out.println();
                 System.out.print("Decoded string: ");
-                System.out.println(currMsg);*/
+                System.out.println(currMsg);
+                System.out.println();
 			    outputArea.append(currMsg+"\n");
              }
              catch (Exception e)
@@ -181,20 +179,20 @@ public class SecureChatClient extends JFrame implements Runnable, ActionListener
         String currMsg = e.getActionCommand();      // Get input value
         inputField.setText("");
         currMsg = myName + ": " + currMsg;
-        /*System.out.print("Sending string: ");
+        System.out.print("Sending string: ");
         System.out.println(currMsg);
         System.out.print("Plain byte array: ");
         byte[] msgBytes = currMsg.getBytes();
         for (int i = 0; i < msgBytes.length; i++) {
             System.out.print(msgBytes[i] + " ");
         }
-        System.out.println();*/
+        System.out.println();
         byte[] encBytes = cipher.encode(currMsg);
-        /*System.out.println("Encoded byte array: ");
+        System.out.print("Encoded byte array: ");
         for (int i = 0; i < encBytes.length; i++) {
             System.out.print(encBytes[i] + " ");
         }
-        System.out.println();*/
+        System.out.println("\n");
         try {
             myWriter.writeObject(encBytes);
         }                       // Add name and send it to Server
