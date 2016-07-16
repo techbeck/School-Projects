@@ -1,20 +1,20 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "mymalloc.h"
-struct node {
+typedef struct node {
 	int status;
 	struct node *previous;
 	struct node *next;
 	int size;
-};
-static struct node *coalesce(struct node *, struct node *);
-static struct node *head = NULL;
+} Node;
+static Node *coalesce(Node *, Node *);
+static Node *head = NULL;
 static const int ALLOCATED = 1;
 static const int FREE = 0;
-static const int node_size = (int) sizeof(struct node);
+static const int node_size = (int) sizeof(Node);
 void *my_firstfit_malloc(int size) {
-	struct node *this_node = head;
-	struct node *new_node = NULL;
+	Node *this_node = head;
+	Node *new_node = NULL;
 	// first allocation
 	if (head == NULL) {
 		head = sbrk(size + node_size);
@@ -57,9 +57,9 @@ void *my_firstfit_malloc(int size) {
 	return (new_node + 1);
 }
 void my_free(void *ptr) {
-	struct node *this_node = ptr - node_size;
-	struct node *next_node = this_node->next;
-	struct node *previous_node = this_node->previous;
+	Node *this_node = ptr - node_size;
+	Node *next_node = this_node->next;
+	Node *previous_node = this_node->previous;
 	this_node->status = FREE;
 	if (next_node != NULL && next_node->status == FREE) {
 		this_node = coalesce(this_node, next_node);
@@ -78,9 +78,8 @@ void my_free(void *ptr) {
 	if ((head->status == FREE) && head->next == NULL) {
 		head = NULL;
 	}
-	printf("\n\n");
 }
-static struct node *coalesce(struct node *fst_node, struct node *snd_node) {
+static Node *coalesce(Node *fst_node, Node *snd_node) {
 	fst_node->next = snd_node->next;
 	if (snd_node->next != NULL) {
 		snd_node->next->previous = fst_node;

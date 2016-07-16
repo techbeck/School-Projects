@@ -2,32 +2,51 @@
 #include <unistd.h>
 #include "mymalloc.h"
 int main() {
-	printf("sbrk(0) %p\n", sbrk(0));
-	char *a = my_firstfit_malloc(256);  // 0x100
-	char *b = my_firstfit_malloc(1000); // 0x3E8
-	char *c = my_firstfit_malloc(280); // 0x118
-	char *d = my_firstfit_malloc(480);  // 0x1E0
-	printf("a %p\n", a);
-	printf("b %p\n", b);
-	printf("c %p\n", c);
-	printf("d %p\n", d);
+	void *sbrk0 = sbrk(0);
+	printf("sbrk(0) %p\n", sbrk0);
+	char *a = my_firstfit_malloc(100);
+	char *b1 = my_firstfit_malloc(100);
+	char *b2 = my_firstfit_malloc(100);
+	char *c = my_firstfit_malloc(300);
+	char *d = my_firstfit_malloc(400);
+	char *e = my_firstfit_malloc(500);
+	printf("a: %p\n", a);
+	printf("b1: %p\n", b1);
+	printf("b2: %p\n", b2);
+	printf("c: %p\n", c);
+	printf("d: %p\n", d);
+	printf("e: %p\n", e);
+	my_free(b1);
+	my_free(b2);
+	my_free(d);
+	printf("freeing b1, b2, d\n");
+	char *f = my_firstfit_malloc(300);
+	char *g = my_firstfit_malloc(150);
+	if (f < e) {
+		printf("correct allocation into freed space\n");
+	}
+	if (g < f) {
+		printf("correct coalesce & first fit\n");
+	}
+	printf("a: %p\n", a);
+	printf("c: %p\n", c);
+	printf("d: %p\n", d);
+	printf("e: %p\n", e);
+	printf("f: %p\n", f);
+	printf("g: %p\n", g);
 	my_free(a);
-	my_free(b);
 	my_free(c);
 	my_free(d);
-	/*my_free(b);
-	my_free(c);
-	char *e = my_firstfit_malloc(144);	// 0x90
-	printf("e %p\n", e);
-	if (e < d) {
-		printf("correct first fit\n");
+	my_free(e);
+	my_free(f);
+	my_free(g);
+	void *sbrk1 = sbrk(0);
+	printf("end sbrk(0) %p\n", sbrk1);
+	if (sbrk0 == sbrk1) {
+		printf("correct decrement");
 	}
 	else {
-		printf("incorrect first fit\n");
+		printf("not decremented correctly\n");
 	}
-	my_free(a);
-	my_free(e);
-	my_free(d);*/
-	printf("end sbrk(0) %p\n", sbrk(0));
 	return 0;
 }
