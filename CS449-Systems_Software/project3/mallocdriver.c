@@ -11,20 +11,23 @@ int main() {
 	printf("b %p\n", b);
 	printf("c %p\n", c);
 	printf("d %p\n", d);
+	my_free(a);
 	my_free(b);
+	my_free(c);
+	my_free(d);
+	/*my_free(b);
 	my_free(c);
 	char *e = my_firstfit_malloc(144);	// 0x90
 	printf("e %p\n", e);
 	if (e < d) {
 		printf("correct first fit\n");
-		printf("%p\n", d);
 	}
 	else {
 		printf("incorrect first fit\n");
 	}
 	my_free(a);
-	my_free(d);
 	my_free(e);
-	printf("new sbrk(0) %p\n", sbrk(0));
+	my_free(d);*/
+	printf("end sbrk(0) %p\n", sbrk(0));
 	return 0;
 }
