@@ -13,3 +13,7 @@ clean:
 	rm malloctest
 run:
 	./malloctest
+maltest: mallocdrv.c mymalloc.c
+	gcc -o maltest mallocdrv.c mymalloc.c
+malclean:
+	rm maltest

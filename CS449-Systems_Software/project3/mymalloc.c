@@ -9,6 +9,7 @@ typedef struct node {
 } Node;
 static Node *coalesce(Node *, Node *);
 static Node *head = NULL;
+static Node *tail = NULL;
 static const int ALLOCATED = 1;
 static const int FREE = 0;
 static const int node_size = (int) sizeof(Node);
@@ -22,6 +23,7 @@ void *my_firstfit_malloc(int size) {
 		head->previous = NULL;
 		head->next = NULL;
 		head->size = size;
+		tail = head;
 		return (head + 1);
 	}
 	while (this_node->next != NULL) {
@@ -34,7 +36,7 @@ void *my_firstfit_malloc(int size) {
 		if (this_node->size >= size) {
 			// only create new free node if there's space for it
 			if (this_node->size > (size + node_size)) {
-				new_node = this_node + node_size + size;
+				new_node = this_node + 1 + (size/node_size);
 				new_node->status = FREE;
 				new_node->previous = this_node;
 				new_node->next = this_node->next;
@@ -54,10 +56,16 @@ void *my_firstfit_malloc(int size) {
 	new_node->previous = this_node;
 	new_node->next = NULL;
 	new_node->size = size;
-	return (new_node + 1);
+	tail = new_node;    return (new_node + 1);
 }
 void my_free(void *ptr) {
 	Node *this_node = ptr - node_size;
+	if (this_node == tail) {
+		tail = this_node->previous;
+	}
+	if (this_node == head && this_node->next == NULL) {
+		head = NULL;
+	}
 	Node *next_node = this_node->next;
 	Node *previous_node = this_node->previous;
 	this_node->status = FREE;
@@ -68,16 +76,9 @@ void my_free(void *ptr) {
 		this_node = coalesce(previous_node, this_node);
 	}
 	ptr = this_node + 1;
-	if ((this_node + 1 + (this_node->size/node_size)) == sbrk(0)) { 
-		printf("sbrk(0) pre-dec %p\n", sbrk(0));
-		printf("size+node %x\n", (this_node->size + node_size));
+	if ((ptr + this_node->size) == sbrk(0)) {
 		sbrk(-(this_node->size + node_size));
-		printf("decrement by size+node\n");
-		printf("sbrk(0) post-dec %p\n", sbrk(0));
 	} // decrement brk if freed space borders it
-	if ((head->status == FREE) && head->next == NULL) {
-		head = NULL;
-	}
 }
 static Node *coalesce(Node *fst_node, Node *snd_node) {
 	fst_node->next = snd_node->next;
@@ -85,5 +86,4 @@ static Node *coalesce(Node *fst_node, Node *snd_node) {
 		snd_node->next->previous = fst_node;
 	}
 	fst_node->size = fst_node->size + snd_node->size + node_size;
-	return fst_node;
 }

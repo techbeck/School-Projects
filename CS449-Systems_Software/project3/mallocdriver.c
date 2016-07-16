@@ -43,10 +43,12 @@ int main() {
 	void *sbrk1 = sbrk(0);
 	printf("end sbrk(0) %p\n", sbrk1);
 	if (sbrk0 == sbrk1) {
-		printf("correct decrement");
+		printf("correct decrement\n");
 	}
 	else {
 		printf("not decremented correctly\n");
 	}
+	a = my_firstfit_malloc(100);
+	my_free(a);
 	return 0;
 }
