@@ -56,15 +56,28 @@ void *my_firstfit_malloc(int size) {
 	new_node->previous = this_node;
 	new_node->next = NULL;
 	new_node->size = size;
-	tail = new_node;    return (new_node + 1);
+	tail = new_node;
+	return (new_node + 1);
 }
 void my_free(void *ptr) {
+	printf("\n");
+	printf("free ptr %p\n", ptr);
+	printf("sbrk %p\n", sbrk(0));
 	Node *this_node = ptr - node_size;
 	if (this_node == tail) {
 		tail = this_node->previous;
 	}
 	if (this_node == head && this_node->next == NULL) {
 		head = NULL;
+		sbrk(-(this_node->size + node_size));
+		return;
+	}
+	Node *curr = head;
+	while (curr != NULL) {
+		printf("curr node %p\t", curr);
+		printf("curr size %x\n", curr->size);
+		printf("curr stat %d\n", curr->status);
+		curr = curr->next;
 	}
 	Node *next_node = this_node->next;
 	Node *previous_node = this_node->previous;
@@ -76,8 +89,10 @@ void my_free(void *ptr) {
 		this_node = coalesce(previous_node, this_node);
 	}
 	ptr = this_node + 1;
-	if ((ptr + this_node->size) == sbrk(0)) {
+	if ((ptr + this_node->size) == sbrk(0)) { 
+		printf("sbrk pre-dec: %p\n", sbrk(0));
 		sbrk(-(this_node->size + node_size));
+		printf("sbrk post-dec: %p\n", sbrk(0));
 	} // decrement brk if freed space borders it
 }
 static Node *coalesce(Node *fst_node, Node *snd_node) {
@@ -86,4 +101,5 @@ static Node *coalesce(Node *fst_node, Node *snd_node) {
 		snd_node->next->previous = fst_node;
 	}
 	fst_node->size = fst_node->size + snd_node->size + node_size;
+	return fst_node;
 }

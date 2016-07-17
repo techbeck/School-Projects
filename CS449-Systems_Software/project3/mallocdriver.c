@@ -2,8 +2,6 @@
 #include <unistd.h>
 #include "mymalloc.h"
 int main() {
-	void *sbrk0 = sbrk(0);
-	printf("sbrk(0) %p\n", sbrk0);
 	char *a = my_firstfit_malloc(100);
 	char *b1 = my_firstfit_malloc(100);
 	char *b2 = my_firstfit_malloc(100);
@@ -28,27 +26,12 @@ int main() {
 	if (g < f) {
 		printf("correct coalesce & first fit\n");
 	}
-	printf("a: %p\n", a);
-	printf("c: %p\n", c);
-	printf("d: %p\n", d);
-	printf("e: %p\n", e);
 	printf("f: %p\n", f);
 	printf("g: %p\n", g);
 	my_free(a);
 	my_free(c);
-	my_free(d);
 	my_free(e);
 	my_free(f);
 	my_free(g);
-	void *sbrk1 = sbrk(0);
-	printf("end sbrk(0) %p\n", sbrk1);
-	if (sbrk0 == sbrk1) {
-		printf("correct decrement\n");
-	}
-	else {
-		printf("not decremented correctly\n");
-	}
-	a = my_firstfit_malloc(100);
-	my_free(a);
 	return 0;
 }

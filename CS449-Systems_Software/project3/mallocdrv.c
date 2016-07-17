@@ -12,7 +12,7 @@
 #define FREE my_free
 
 //You can adjust how many things are allocated
-#define TIMES 10
+#define TIMES 3
 
 //If you want to make times bigger than 100, remove the call to qsort and do something else.
 //Then remove this check.
