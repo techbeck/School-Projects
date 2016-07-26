@@ -4,20 +4,25 @@ CS1501
 */
 
 import java.io.*;
-import java.util.Scanner;
+import java.util.*;
 
 public class Airline {
 	// Graph Variables
 	private int numCities;
 	private int numRoutes;
 	private City[] cities;
+	private ArrayList<Route> routes = new ArrayList<Route>();
 	private Bag<Route>[] adj;	// adjacency list indexed on city id's (adj[id-1])
 
 	// MST Variables
 	private Route[] edgeTo;        // edgeTo[v] = shortest edge from tree vertex to non-tree vertex
 	private int[] distTo;      // distTo[v] = weight of shortest such edge
 	private boolean[] marked;     // marked[v] = true if v on tree, false otherwise
-	private IndexMinPQ<Integer> pq;
+	private IndexMinPQ<Integer> pq;	// based on city ID
+
+	// Dijkstra Variables
+	private double[] costTo;	// costTo[v] = distance  of shortest s->v path
+	private IndexMinPQ<Double> costPQ;	// based on city ID, option 4
 
 	public Airline(String filename) {
 		System.out.println("INPUT FILE: " + filename);
@@ -34,12 +39,11 @@ public class Airline {
 			System.exit(1);
 		}
 		numCities = scan.nextInt();
+		cities = new City[numCities];
 		scan.nextLine();	// throw out leftover newline
 		for (int i = 0; i < numCities; i++) {
 			String name = scan.nextLine();
-			System.out.println(name);
 			cities[i] = new City(i+1, name);
-			System.out.println(cities[i]);
 		}
 		@SuppressWarnings("unchecked")
 		Bag<Route>[] a = (Bag<Route>[]) new Bag[numCities];
@@ -50,36 +54,34 @@ public class Airline {
 		while(scan.hasNext()) {
 			String input = scan.nextLine();
 			String[] inArray = input.split(" ");
-			int city1ID = Integer.parseInt(inArray[0]);
-			int city2ID = Integer.parseInt(inArray[1]);
+			int c1ID = Integer.parseInt(inArray[0]);
+			int c2ID = Integer.parseInt(inArray[1]);
 			int distance = Integer.parseInt(inArray[2]);
 			double price = Double.parseDouble(inArray[3]);
-			addRoute(new Route(cities[city1ID-1], cities[city2ID-1], distance, price));
+			Route r = new Route(cities[c1ID-1], cities[c2ID-1], distance, price);
+			routes.add(r);
+			adj[c1ID-1].add(r);
+			adj[c2ID-1].add(r);
+			numRoutes++;
 		}
 		scan.close();
 	}
 
-	public void addRoute(Route r) {
-		City city1 = r.fst();
-		City city2 = r.snd();
-		adj[city1.id()-1].add(r);
-		adj[city2.id()-1].add(r);
-		numRoutes++;
-	}
-
+	// Option 1
 	public void showAllRoutes() {
 		System.out.println("SHOWING ALL DIRECT ROUTES");
 		System.out.println("Note that routes are duplicated," + 
 							" once from each end city's point of view");
 		System.out.println("--------------------------------" +
 							"-----------------------------------------");
-		for (int i = 0; i < numCities; i++) {
-			for (Route r : adj[i]) {
-				System.out.println(r.toStringWN());
-			}
+		Object[] objArr = routes.toArray();
+		for (int i = 0; i < numRoutes; i++) {
+			Route route = (Route) objArr[i];
+			System.out.println(route.toStringWN());
 		}
 	}
 
+	// Option 2
 	public void mst() {
 		edgeTo = new Route[numCities];
 		distTo = new int[numCities];
@@ -135,6 +137,309 @@ public class Airline {
 		}
 	}
 
+	// Option 3
+	public void shortestByDistance(String c1, String c2) {
+		System.out.println("SHORTEST DISTANCE PATH from " + c1 + " to " + c2);
+		System.out.println("--------------------------------------------------------");
+		City city1 = null;
+		City city2 = null;
+		for (int i = 0; i < numCities; i++) {
+			if (cities[i].name().equals(c1)) {
+				city1 = cities[i];
+			}
+			if (cities[i].name().equals(c2)) {
+				city2 = cities[i];
+			}
+		}
+		if (c1.equals(c2) || city1 == null || city2 == null) {
+			System.out.println("Invalid city choice(s)");
+			return;
+		}
+		distTo = new int[numCities];
+		edgeTo = new Route[numCities];
+		for (int i = 0; i < numCities; i++)
+			distTo[i] = Integer.MAX_VALUE;
+		distTo[city1.id()-1] = 0;
+		// relax vertices in order of distance from s
+		pq = new IndexMinPQ<Integer>(numCities);
+		pq.insert(city1.id()-1, distTo[city1.id()-1]);
+		while (!pq.isEmpty()) {
+			int v = pq.delMin();
+			for (Route r : adj[v])
+				relaxD(r, v);
+		}
+		if (distTo[city2.id()-1] == Integer.MAX_VALUE) {
+			System.out.println("No path");
+			return;
+		}
+		System.out.printf("Shortest distance from %s to %s is %d\n",
+										c1, c2, distTo[city2.id()-1]);
+		System.out.println("Path with edges (in reverse order):");
+		City currCity = city2;
+		for (Route r = edgeTo[city2.id()-1]; r != null; r = edgeTo[currCity.id()-1]) {
+			System.out.print(currCity + " " + r.distance() + " ");
+			currCity = r.other(currCity);
+		}
+		System.out.println(currCity);
+	}
+
+	// relax edge e and update pq if changed
+	private void relaxD(Route r, int v) {
+		City city2 = r.other(cities[v]);
+		int w = city2.id()-1;
+		if (distTo[w] > distTo[v] + r.distance()) {
+			distTo[w] = distTo[v] + r.distance();
+			edgeTo[w] = r;
+			if (pq.contains(w)) pq.change(w, distTo[w]);
+			else               		pq.insert(w, distTo[w]);
+		}
+	}
+
+	// Option 4
+	public void shortestByCost(String c1, String c2) {
+		System.out.println("SHORTEST COST PATH from " + c1 + " to " + c2);
+		System.out.println("--------------------------------------------------------");
+		City city1 = null;
+		City city2 = null;
+		for (int i = 0; i < numCities; i++) {
+			if (cities[i].name().equals(c1)) {
+				city1 = cities[i];
+			}
+			if (cities[i].name().equals(c2)) {
+				city2 = cities[i];
+			}
+		}
+		if (c1.equals(c2) || city1 == null || city2 == null) {
+			System.out.println("Invalid city choice(s)");
+			return;
+		}
+		costTo = new double[numCities];
+		edgeTo = new Route[numCities];
+		for (int i = 0; i < numCities; i++)
+			costTo[i] = Double.POSITIVE_INFINITY;
+		costTo[city1.id()-1] = 0;
+		// relax vertices in order of distance from s
+		costPQ = new IndexMinPQ<Double>(numCities);
+		costPQ.insert(city1.id()-1, costTo[city1.id()-1]);
+		while (!costPQ.isEmpty()) {
+			int v = costPQ.delMin();
+			for (Route r : adj[v])
+				relaxC(r, v);
+		}
+		if (costTo[city2.id()-1] == Double.POSITIVE_INFINITY) {
+			System.out.println("No path");
+			return;
+		}
+		System.out.printf("Shortest cost from %s to %s is %.2f\n",
+										c1, c2, costTo[city2.id()-1]);
+		System.out.println("Path with edges (in reverse order):");
+		City currCity = city2;
+		for (Route r = edgeTo[city2.id()-1]; r != null; r = edgeTo[currCity.id()-1]) {
+			System.out.print(currCity + " " + r.price() + " ");
+			currCity = r.other(currCity);
+		}
+		System.out.println(currCity);
+	}
+
+	// relax edge e and update pq if changed
+	private void relaxC(Route r, int v) {
+		City city2 = r.other(cities[v]);
+		int w = city2.id()-1;
+		if (costTo[w] > costTo[v] + r.price()) {
+			costTo[w] = costTo[v] + r.price();
+			edgeTo[w] = r;
+			if (costPQ.contains(w)) costPQ.change(w, costTo[w]);
+			else               		costPQ.insert(w, costTo[w]);
+		}
+	}
+
+	// Option 5
+	public void shortestByHops(String c1, String c2) {
+		System.out.println("FEWEST HOPS from " + c1 + " to " + c2);
+		System.out.println("---------------------------------------------");
+		City city1 = null;
+		City city2 = null;
+		for (int i = 0; i < numCities; i++) {
+			if (cities[i].name().equals(c1)) {
+				city1 = cities[i];
+			}
+			if (cities[i].name().equals(c2)) {
+				city2 = cities[i];
+			}
+		}
+		if (c1.equals(c2) || city1 == null || city2 == null) {
+			System.out.println("Invalid city choice(s)");
+			return;
+		}
+		marked = new boolean[numCities];
+		distTo = new int[numCities];
+		edgeTo = new Route[numCities];
+		for (int i = 0; i < numCities; i++) distTo[i] = Integer.MAX_VALUE;
+		bfs(city1.id()-1);
+		if (distTo[city2.id()-1] == Integer.MAX_VALUE) {
+			System.out.println("No path");
+			return;
+		}
+		System.out.printf("Fewest hops from %s to %s is %d\n", c1, c2, distTo[city2.id()-1]);
+		City currCity = city2;
+		for (Route r = edgeTo[city2.id()-1]; r != null; r = edgeTo[currCity.id()-1]) {
+			System.out.print(currCity + " ");
+			currCity = r.other(currCity);
+		}
+		System.out.println(currCity);
+	}
+
+	public void bfs(int s) {
+		Queue<Integer> q = new Queue<Integer>();
+		distTo[s] = 0;
+		marked[s] = true;
+		q.enqueue(s);
+		while (!q.isEmpty()) {
+			int v = q.dequeue();
+			for (Route r : adj[v]) {
+				int w = r.other(cities[v]).id()-1; // index of other city on route
+				if (!marked[w]) {
+					edgeTo[w] = r;
+					distTo[w] = distTo[v] + 1;
+					marked[w] = true;
+					q.enqueue(w);
+				}
+			}
+		}
+	}
+
+	// Option 6
+	public void pathsUnderCost(double cost) {
+		for (int i = 0; i < numCities; i++) {
+					/*costTo = new double[numCities];
+					edgeTo = new Route[numCities];
+					for (int j = 0; j < numCities; j++)
+						costTo[j] = Double.POSITIVE_INFINITY;
+					costTo[i] = 0;
+					// relax vertices in order of distance from s
+					costPQ = new IndexMinPQ<Double>(numCities);
+					costPQ.insert(i, costTo[i]);
+					while (!costPQ.isEmpty()) {
+						int v = costPQ.delMin();
+						for (Route r : adj[v])
+							relaxC(r, v);
+					}*/
+			for (Route r : adj[i]) {
+				// TO DO:
+				/*
+				for all routes from each starting point, find all possible paths
+				prune when cost passes limit
+				*/
+			}
+			for (int j = 0; j < numCities; j++) {
+				if (costTo[j] <= cost) {
+					StringBuilder sb = new StringBuilder();
+					String temp = String.format("Cost: %.0f Path (reversed): ", costTo[j]);
+					sb.append(temp);
+					City currCity = cities[j];
+					for (Route r = edgeTo[j]; r != null; r = edgeTo[currCity.id()-1]) {
+						temp = String.format("%s %.0f ",currCity, r.price());
+						sb.append(temp);
+						currCity = r.other(currCity);
+					}
+					sb.append(currCity);
+					if (!currCity.equals(cities[j])) {
+						System.out.println(sb);
+					}
+				}
+			}
+		}
+	}
+
+	// Option 7
+	public void addRoute(String c1, String c2, int distance, double price) {
+		if (c1.equals(c2) || distance < 0 || price < 0) {
+			System.out.println("Invalid route info");
+			return;
+		}
+		City city1 = null;
+		City city2 = null;
+		for (int i = 0; i < numCities; i++) {
+			if (cities[i].name().equals(c1)) {
+				city1 = cities[i];
+			}
+			if (cities[i].name().equals(c2)) {
+				city2 = cities[i];
+			}
+		}
+		if (city1 == null || city2 == null) {
+			System.out.println("Invalid city choice(s)");
+			return;
+		}
+		Route r = new Route(city1, city2, distance, price);
+		routes.add(r);
+		adj[city1.id()-1].add(r);
+		adj[city2.id()-1].add(r);
+		numRoutes++;
+	}
+
+	/*public void addCity(String c) {
+		if (c == null || c.length() == 0) {
+			System.out.println("Invalid city choice");
+			return;
+		}
+		// TO DO: add to cities and adj
+	}*/
+
+	// Option 8
+	public void removeRoute(String c1, String c2) {
+		City city1 = null;
+		City city2 = null;
+		for (int i = 0; i < numCities; i++) {
+			if (cities[i].name().equals(c1)) {
+				city1 = cities[i];
+			}
+			if (cities[i].name().equals(c2)) {
+				city2 = cities[i];
+			}
+		}
+		if (c1.equals(c2) || city1 == null || city2 == null) {
+			System.out.println("Invalid city choice(s)");
+			return;
+		}
+		removeRoute(city1, city2);
+	}
+
+	public void removeRoute(City city1, City city2) {
+		Route route = null;
+		for (Route r : adj[city1.id()-1]) {
+			if (r.other(city1).equals(city2)) {
+				route = r;
+				break;
+			}
+		}
+		adj[city1.id()-1].remove(route);
+		adj[city2.id()-1].remove(route);
+		routes.remove(route);
+		numRoutes--;
+	}
+
+	/*public void removeCity(String c) {
+		City city = null;
+		for (int i = 0; i < numCities; i++) {
+			if (cities[i].name().equals(c)) {
+				city1 = cities[i];
+			}
+		}
+		if (city == null) {
+			System.out.println("Invalid city choice");
+			return;
+		}
+		for (Route r : adj[city.id()-1]) {
+			City other = r.other(city);
+			adj[other.id()-1].remove(r);
+			numRoutes--;
+		}
+		adj[city.id()-1] = null;
+		// TO DO: when adding, fill in null indices
+		numCities--;
+	}*/
+
 	public void saveRoutes(String filename) {
 		PrintWriter p = null;
 		try {
@@ -147,17 +452,92 @@ public class Airline {
 		for (int i = 0; i < numCities; i++) {
 			p.println(cities[i]);
 		}
-		for (int i = 0; i < numCities; i++) {
-			for (Route r : adj[i]) {
-				System.out.println(r);
-			}
+		Object[] objArr = routes.toArray();
+		for (int i = 0; i < numRoutes; i++) {
+			Route route = (Route) objArr[i];
+			p.println(route);
 		}
+		p.close();
 	}
 
-	// Tester
+	// Driver
 	public static void main(String[] args) {
-		Airline a = new Airline("a5data1.txt");
-		a.mst();
-		a.saveRoutes("a5data1.txt");
+		Scanner input = new Scanner(System.in);
+		System.out.println("What file do you want to use for input/output?");
+		String filename = input.nextLine();
+		Airline a = new Airline(filename);
+		String city1, city2;
+		loop:
+		while (true) {
+			System.out.println("\n\tWhat would you like to do?");
+			System.out.println("\t1: See All Direct Routes");
+			System.out.println("\t2: Find Minimum Spanning Tree");
+			System.out.println("\t3: Find Shortest Path by Distance");
+			System.out.println("\t4: Find Shortest Path by Cost");
+			System.out.println("\t5: Find Shortest Path by Hops");
+			System.out.println("\t6: Find Trips Under Cost");
+			System.out.println("\t7: Add a Route");
+			System.out.println("\t8: Remove a Route");
+			System.out.println("\t9: Quit");
+			System.out.print("Enter numeric choice: ");
+			int choice = input.nextInt();
+			input.nextLine(); // throw out leftover newline
+			switch (choice) {
+				case 1:
+					a.showAllRoutes();
+					break;
+				case 2:
+					a.mst();
+					break;
+				case 3:
+					System.out.print("Enter the first city: ");
+					city1 = input.nextLine();
+					System.out.print("Enter the second city: ");
+					city2 = input.nextLine();
+					a.shortestByDistance(city1, city2);
+					break;
+				case 4:
+					System.out.print("Enter the first city: ");
+					city1 = input.nextLine();
+					System.out.print("Enter the second city: ");
+					city2 = input.nextLine();
+					a.shortestByCost(city1, city2);
+					break;
+				case 5:
+					System.out.print("Enter the first city: ");
+					city1 = input.nextLine();
+					System.out.print("Enter the second city: ");
+					city2 = input.nextLine();
+					a.shortestByHops(city1, city2);
+					break;
+				case 6:
+					System.out.print("Enter max cost: ");
+					double cost = input.nextInt();
+					a.pathsUnderCost(cost);
+					break;
+				case 7:
+					System.out.print("Enter the first city: ");
+					city1 = input.nextLine();
+					System.out.print("Enter the second city: ");
+					city2 = input.nextLine();
+					System.out.print("Enter the distance: ");
+					int distance = input.nextInt();
+					System.out.print("Enter the price: ");
+					double price = input.nextDouble();
+					a.addRoute(city1, city2, distance, price);
+					break;
+				case 8:
+					System.out.print("Enter the first city: ");
+					city1 = input.nextLine();
+					System.out.print("Enter the second city: ");
+					city2 = input.nextLine();
+					a.removeRoute(city1, city2);
+					break;
+				case 9:
+					a.saveRoutes(filename);
+					break loop;
+			}
+		}
+		input.close();
 	}
 }
