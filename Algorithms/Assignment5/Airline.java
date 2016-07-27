@@ -113,7 +113,6 @@ public class Airline {
 		}
 	}
 
-	// scan city v
 	private void scan(int v) {
 		marked[v] = true;
 		for (Route r : adj[v]) {
@@ -183,8 +182,8 @@ public class Airline {
 		System.out.println(currCity);
 	}
 
-	// relax edge e and update pq if changed
 	private void relaxD(Route r, int v) {
+		// relax edge e and update pq if changed
 		City city2 = r.other(cities[v]);
 		int w = city2.id()-1;
 		if (distTo[w] > distTo[v] + r.distance()) {
@@ -309,29 +308,18 @@ public class Airline {
 	}
 
 	// Option 6
-	public void pathsUnderCost(double cost) {
+	public void pathsUnderCost(double maxCost) {
+		System.out.printf("ALL PATHS OF COST %.0f OR LESS\n", maxCost);
+		System.out.println("Note that routes are duplicated," + 
+							" once from each end city's point of view");
+		System.out.println("--------------------------------" +
+							"-----------------------------------------");
+		// find all paths starting at each city
 		for (int i = 0; i < numCities; i++) {
-					/*costTo = new double[numCities];
-					edgeTo = new Route[numCities];
-					for (int j = 0; j < numCities; j++)
-						costTo[j] = Double.POSITIVE_INFINITY;
-					costTo[i] = 0;
-					// relax vertices in order of distance from s
-					costPQ = new IndexMinPQ<Double>(numCities);
-					costPQ.insert(i, costTo[i]);
-					while (!costPQ.isEmpty()) {
-						int v = costPQ.delMin();
-						for (Route r : adj[v])
-							relaxC(r, v);
-					}*/
-			for (Route r : adj[i]) {
-				// TO DO:
-				/*
-				for all routes from each starting point, find all possible paths
-				prune when cost passes limit
-				*/
-			}
-			for (int j = 0; j < numCities; j++) {
+			edgeTo = new Route[numCities];	// reset for each start city
+			marked = new boolean[numCities];
+			recPaths(maxCost, 0, cities[i]);
+			/*for (int j = 0; j < numCities; j++) {
 				if (costTo[j] <= cost) {
 					StringBuilder sb = new StringBuilder();
 					String temp = String.format("Cost: %.0f Path (reversed): ", costTo[j]);
@@ -347,6 +335,34 @@ public class Airline {
 						System.out.println(sb);
 					}
 				}
+			}*/
+		}
+	}
+
+	private void recPaths(double maxCost, double currCost, City currCity) {
+		// backtrack if above max cost
+		if (currCost > maxCost) {
+			return;
+		}
+		// Print current path before continuing along routes
+		if (edgeTo[currCity.id()-1] != null) {
+			System.out.printf("Cost: %.0f Path (reversed): ", currCost);
+			City temp = currCity;
+			for (Route r = edgeTo[temp.id()-1]; r != null; r = edgeTo[temp.id()-1]) {
+				System.out.printf("%s %.0f ", temp, r.price());
+				temp = r.other(temp);
+			}
+			System.out.println(temp);
+		}
+		// Recursion
+		marked[currCity.id()-1] = true;
+		for (Route r : adj[currCity.id()-1]) {
+			// TO DO:
+			City other = r.other(currCity);
+			if (!marked[other.id()-1]) {
+				edgeTo[other.id()-1] = r;
+				currCost += r.price();
+				recPaths(maxCost, currCost, other);
 			}
 		}
 	}
@@ -479,6 +495,7 @@ public class Airline {
 			System.out.println("\t7: Add a Route");
 			System.out.println("\t8: Remove a Route");
 			System.out.println("\t9: Quit");
+			System.out.println("\t10: Quit Without Saving");
 			System.out.print("Enter numeric choice: ");
 			int choice = input.nextInt();
 			input.nextLine(); // throw out leftover newline
@@ -535,6 +552,8 @@ public class Airline {
 					break;
 				case 9:
 					a.saveRoutes(filename);
+					break loop;
+				case 10:
 					break loop;
 			}
 		}
