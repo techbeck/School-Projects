@@ -15,7 +15,7 @@ public class Airline {
 	private Bag<Route>[] adj;	// adjacency list indexed on city id's (adj[id-1])
 
 	// MST Variables
-	private Route[] edgeTo;        // edgeTo[v] = shortest edge from tree vertex to non-tree vertex
+	private Route[] edgeTo;        // edgeTo[v] = shortest edge from tree v non-tree v
 	private int[] distTo;      // distTo[v] = weight of shortest such edge
 	private boolean[] marked;     // marked[v] = true if v on tree, false otherwise
 	private IndexMinPQ<Integer> pq;	// based on city ID
@@ -107,7 +107,7 @@ public class Airline {
 			int v = pq.delMin();
 			if (v != s) {
 				Route r = edgeTo[v];
-				System.out.println(r.fst() + "," + r.snd() + " : " + r.distance());
+				System.out.printf("%s, %s : %d\n", r.fst(), r.snd(), r.distance());
 			}
 			scan(v);
 		}
@@ -279,7 +279,8 @@ public class Airline {
 			System.out.println("No path");
 			return;
 		}
-		System.out.printf("Fewest hops from %s to %s is %d\n", c1, c2, distTo[city2.id()-1]);
+		System.out.printf("Fewest hops from %s to %s is %d\n",
+										c1, c2, distTo[city2.id()-1]);
 		City currCity = city2;
 		for (Route r = edgeTo[city2.id()-1]; r != null; r = edgeTo[currCity.id()-1]) {
 			System.out.print(currCity + " ");
@@ -326,6 +327,9 @@ public class Airline {
 		// backtrack if above max cost
 		if (currCost > maxCost) {
 			marked[currCity.id()-1] = false;
+			return;
+		}
+		if (marked[currCity.id()-1]) {
 			return;
 		}
 		// Print current path before continuing along routes
@@ -380,14 +384,6 @@ public class Airline {
 		numRoutes++;
 	}
 
-	/*public void addCity(String c) {
-		if (c == null || c.length() == 0) {
-			System.out.println("Invalid city choice");
-			return;
-		}
-		// TO DO: add to cities and adj
-	}*/
-
 	// Option 8
 	public void removeRoute(String c1, String c2) {
 		City city1 = null;
@@ -421,27 +417,86 @@ public class Airline {
 		numRoutes--;
 	}
 
-	/*public void removeCity(String c) {
+	// Option 9
+	public void addCity(String c) {
+		if (c == null || c.length() == 0) {
+			System.out.println("Invalid city choice");
+			return;
+		}
+		City newCity = new City(numCities+1, c);
+		// Add to cities and adj
+		if (numCities >= cities.length) {
+			resizeCities(2*cities.length);
+			resizeAdj(2*cities.length);
+		}
+		cities[numCities] = newCity;
+		adj[numCities] = new Bag<Route>();
+		numCities++;
+	}
+
+	// Option 10
+	public void removeCity(String c) {
 		City city = null;
 		for (int i = 0; i < numCities; i++) {
 			if (cities[i].name().equals(c)) {
-				city1 = cities[i];
+				city = cities[i];
 			}
 		}
 		if (city == null) {
 			System.out.println("Invalid city choice");
 			return;
 		}
+		// Remove all routes connected to the city
 		for (Route r : adj[city.id()-1]) {
 			City other = r.other(city);
 			adj[other.id()-1].remove(r);
+			routes.remove(r);
 			numRoutes--;
 		}
+		cities[city.id()-1] = null;
 		adj[city.id()-1] = null;
-		// TO DO: when adding, fill in null indices
 		numCities--;
-	}*/
+		// Shift and resize arrays as necessary
+		shiftCities(city.id()-1);
+		shiftAdj(city.id()-1);
+		if (numCities < cities.length/2) {	// halve the lengths of the arrays
+			resizeCities(cities.length/2);
+			resizeAdj(cities.length/2);
+		}
+	}
 
+	private void shiftCities(int index) {
+		for (int i = index; i < numCities; i++) {
+			cities[i] = cities[i+1];
+		}
+		cities[numCities] = null;
+	}
+
+	private void shiftAdj(int index) {
+		for (int i = index; i < numCities; i++) {
+			adj[i] = adj[i+1];
+		}
+		adj[numCities] = null;
+	}
+
+	private void resizeCities(int newSize) {
+		City[] temp = new City[newSize];
+		for (int i = 0; i < numCities; i++) {
+			temp[i] = cities[i];
+		}
+		cities = temp;
+	}
+
+	private void resizeAdj(int newSize) {
+		@SuppressWarnings("unchecked")
+		Bag<Route>[] temp = (Bag<Route>[]) new Bag[newSize];
+		for (int i = 0; i < numCities; i++) {
+			temp[i] = adj[i];
+		}
+		adj = temp;
+	}
+
+	// Option 11
 	public void saveRoutes(String filename) {
 		PrintWriter p = null;
 		try {
@@ -480,8 +535,10 @@ public class Airline {
 			System.out.println("\t6: Find Trips Under Cost");
 			System.out.println("\t7: Add a Route");
 			System.out.println("\t8: Remove a Route");
-			System.out.println("\t9: Quit");
-			System.out.println("\t10: Quit Without Saving");
+			System.out.println("\t9: Add a City");
+			System.out.println("\t10: Remove a City");
+			System.out.println("\t11: Quit");
+			System.out.println("\t12: Quit Without Saving");
 			System.out.print("Enter numeric choice: ");
 			int choice = input.nextInt();
 			input.nextLine(); // throw out leftover newline
@@ -537,12 +594,21 @@ public class Airline {
 					a.removeRoute(city1, city2);
 					break;
 				case 9:
+					System.out.print("Enter the city name: ");
+					city1 = input.nextLine();
+					a.addCity(city1);
+					break;
+				case 10:
+					System.out.print("Enter the city name: ");
+					city1 = input.nextLine();
+					a.removeCity(city1);
+					break;
+				case 11:
 					a.saveRoutes(filename);
 					break loop;
-				case 10:
+				case 12:
 					break loop;
 			}
 		}
-		input.close();
 	}
 }
