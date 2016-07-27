@@ -319,29 +319,13 @@ public class Airline {
 			edgeTo = new Route[numCities];	// reset for each start city
 			marked = new boolean[numCities];
 			recPaths(maxCost, 0, cities[i]);
-			/*for (int j = 0; j < numCities; j++) {
-				if (costTo[j] <= cost) {
-					StringBuilder sb = new StringBuilder();
-					String temp = String.format("Cost: %.0f Path (reversed): ", costTo[j]);
-					sb.append(temp);
-					City currCity = cities[j];
-					for (Route r = edgeTo[j]; r != null; r = edgeTo[currCity.id()-1]) {
-						temp = String.format("%s %.0f ",currCity, r.price());
-						sb.append(temp);
-						currCity = r.other(currCity);
-					}
-					sb.append(currCity);
-					if (!currCity.equals(cities[j])) {
-						System.out.println(sb);
-					}
-				}
-			}*/
 		}
 	}
 
 	private void recPaths(double maxCost, double currCost, City currCity) {
 		// backtrack if above max cost
 		if (currCost > maxCost) {
+			marked[currCity.id()-1] = false;
 			return;
 		}
 		// Print current path before continuing along routes
@@ -365,6 +349,8 @@ public class Airline {
 				recPaths(maxCost, currCost, other);
 			}
 		}
+		// traversed all paths from currCity, backtrack to previous city
+		marked[currCity.id()-1] = false;
 	}
 
 	// Option 7
