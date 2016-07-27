@@ -1,6 +1,7 @@
 /*
 Rebecca Addison
 CS1501
+Assignment 5
 */
 
 import java.io.*;
@@ -15,10 +16,14 @@ public class Airline {
 	private Bag<Route>[] adj;	// adjacency list indexed on city id's (adj[id-1])
 
 	// MST Variables
-	private Route[] edgeTo;        // edgeTo[v] = shortest edge from tree v non-tree v
-	private int[] distTo;      // distTo[v] = weight of shortest such edge
-	private boolean[] marked;     // marked[v] = true if v on tree, false otherwise
+	private Route[] edgeTo;		// edgeTo[v] = shortest edge from tree v non-tree v
+								// reused in Dijkstra, BFS, and recPaths
+	private int[] distTo;		// distTo[v] = weight of shortest such edge
+								// reused in Dijkstra and BFS
+	private boolean[] marked;	// marked[v] = true if v on tree, false otherwise
+								// reused in BFS and recPaths
 	private IndexMinPQ<Integer> pq;	// based on city ID
+								// reused in Dijkstra
 
 	// Dijkstra Variables
 	private double[] costTo;	// costTo[v] = distance  of shortest s->v path
@@ -46,8 +51,8 @@ public class Airline {
 			cities[i] = new City(i+1, name);
 		}
 		@SuppressWarnings("unchecked")
-		Bag<Route>[] a = (Bag<Route>[]) new Bag[numCities];
-		adj = a;
+		Bag<Route>[] temp = (Bag<Route>[]) new Bag[numCities];
+		adj = temp;
 		for (int i = 0; i < numCities; i++) {
 			adj[i] = new Bag<Route>();
 		}
@@ -88,26 +93,32 @@ public class Airline {
 		marked = new boolean[numCities];
 		pq = new IndexMinPQ<Integer>(numCities);
 		System.out.println("MINIMUM SPANNING TREE");
-		System.out.println("---------------------");
+		System.out.print("---------------------");
 		for (int i = 0; i < numCities; i++) {
 			distTo[i] = Integer.MAX_VALUE;
 		}
 		for (int i = 0; i < numCities; i++) {   // run from each vertex to find
 			if (!marked[i]) { 					// minimum spanning forest
-				System.out.println("Connected Component:");
-				prim(i);
+				StringBuilder sb = new StringBuilder();
+				prim(i, sb);
+				if (sb.length() > 0) { 		// Don't print if no routes in CC
+					System.out.println("\nConnected Component:");
+					System.out.print(sb);
+				}
 			}
 		}
 	}
 
-	private void prim(int s) {
+	private void prim(int s, StringBuilder sb) {
 		distTo[s] = 0;
 		pq.insert(s, distTo[s]);
 		while (!pq.isEmpty()) {
 			int v = pq.delMin();
 			if (v != s) {
 				Route r = edgeTo[v];
-				System.out.printf("%s, %s : %d\n", r.fst(), r.snd(), r.distance());
+				String str = String.format("%s, %s : %d\n",
+									r.fst(), r.snd(), r.distance());
+				sb.append(str);
 			}
 			scan(v);
 		}
@@ -116,7 +127,7 @@ public class Airline {
 	private void scan(int v) {
 		marked[v] = true;
 		for (Route r : adj[v]) {
-			int w = r.other(cities[v]).id()-1;	// index of other city in route
+			int w = r.other(cities[v]).id() -1;	// index of other city in route
 			if (marked[w]) 
 			{
 				continue;         // v-w is obsolete edge
@@ -324,12 +335,9 @@ public class Airline {
 	}
 
 	private void recPaths(double maxCost, double currCost, City currCity) {
-		// backtrack if above max cost
+		// Backtrack if above max cost
 		if (currCost > maxCost) {
 			marked[currCity.id()-1] = false;
-			return;
-		}
-		if (marked[currCity.id()-1]) {
 			return;
 		}
 		// Print current path before continuing along routes
@@ -345,12 +353,11 @@ public class Airline {
 		// Recursion
 		marked[currCity.id()-1] = true;
 		for (Route r : adj[currCity.id()-1]) {
-			// TO DO:
 			City other = r.other(currCity);
+			// Don't follow route if other city already in path
 			if (!marked[other.id()-1]) {
 				edgeTo[other.id()-1] = r;
-				currCost += r.price();
-				recPaths(maxCost, currCost, other);
+				recPaths(maxCost, currCost + r.price(), other);
 			}
 		}
 		// traversed all paths from currCity, backtrack to previous city
@@ -468,6 +475,7 @@ public class Airline {
 	private void shiftCities(int index) {
 		for (int i = index; i < numCities; i++) {
 			cities[i] = cities[i+1];
+			cities[i].setID(i+1);
 		}
 		cities[numCities] = null;
 	}
